@@ -1,0 +1,17 @@
+{
+  "version": "2026-07-04",
+  "generatedAt": "2026-07-04T15:54:15.137Z",
+  "statuses": [
+    "published",
+    "approved",
+    "verified"
+  ],
+  "includeSolution": false,
+  "total": 300,
+  "packs": {
+    "6-easy": 50,
+    "6-hard": 100,
+    "8-easy": 100,
+    "8-hard": 50
+  }
+}

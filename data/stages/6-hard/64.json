@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "puzzle": {
+    "id": "tango-6-ecbf65292813",
+    "size": 6,
+    "mode": "standard",
+    "gameDifficulty": "어려움",
+    "difficultyLabel": "어려움",
+    "difficultyLevel": 4,
+    "difficultyScore": 70,
+    "givens": [
+      {
+        "row": 3,
+        "col": 2,
+        "value": "B"
+      }
+    ],
+    "constraints": [
+      {
+        "from": {
+          "row": 0,
+          "col": 1
+        },
+        "to": {
+          "row": 1,
+          "col": 1
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 0,
+          "col": 3
+        },
+        "to": {
+          "row": 1,
+          "col": 3
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 1,
+          "col": 0
+        },
+        "to": {
+          "row": 2,
+          "col": 0
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 1,
+          "col": 3
+        },
+        "to": {
+          "row": 1,
+          "col": 4
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 2,
+          "col": 4
+        },
+        "to": {
+          "row": 3,
+          "col": 4
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 3,
+          "col": 0
+        },
+        "to": {
+          "row": 4,
+          "col": 0
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 2
+        },
+        "to": {
+          "row": 4,
+          "col": 3
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 5,
+          "col": 0
+        },
+        "to": {
+          "row": 5,
+          "col": 1
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 5,
+          "col": 4
+        },
+        "to": {
+          "row": 5,
+          "col": 5
+        },
+        "type": "x"
+      }
+    ],
+    "metadata": {
+      "generatorVersion": "0.1.0"
+    },
+    "stage": 64,
+    "totalStages": 100,
+    "gameDifficultyKey": "hard",
+    "gameDifficultyLabel": "어려움"
+  }
+}

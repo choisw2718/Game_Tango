@@ -1,0 +1,286 @@
+{
+  "ok": true,
+  "puzzle": {
+    "id": "tango-8-7a00a648101c",
+    "size": 8,
+    "mode": "standard",
+    "gameDifficulty": "쉬움",
+    "difficultyLabel": "쉬움",
+    "difficultyLevel": 2,
+    "difficultyScore": 28,
+    "givens": [
+      {
+        "row": 0,
+        "col": 0,
+        "value": "B"
+      },
+      {
+        "row": 5,
+        "col": 4,
+        "value": "B"
+      }
+    ],
+    "constraints": [
+      {
+        "from": {
+          "row": 0,
+          "col": 4
+        },
+        "to": {
+          "row": 0,
+          "col": 5
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 0,
+          "col": 4
+        },
+        "to": {
+          "row": 1,
+          "col": 4
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 0,
+          "col": 6
+        },
+        "to": {
+          "row": 0,
+          "col": 7
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 0,
+          "col": 6
+        },
+        "to": {
+          "row": 1,
+          "col": 6
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 1,
+          "col": 3
+        },
+        "to": {
+          "row": 1,
+          "col": 4
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 1,
+          "col": 3
+        },
+        "to": {
+          "row": 2,
+          "col": 3
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 1,
+          "col": 6
+        },
+        "to": {
+          "row": 1,
+          "col": 7
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 2,
+          "col": 2
+        },
+        "to": {
+          "row": 2,
+          "col": 3
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 2,
+          "col": 2
+        },
+        "to": {
+          "row": 3,
+          "col": 2
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 2,
+          "col": 7
+        },
+        "to": {
+          "row": 3,
+          "col": 7
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 3,
+          "col": 0
+        },
+        "to": {
+          "row": 4,
+          "col": 0
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 3,
+          "col": 2
+        },
+        "to": {
+          "row": 4,
+          "col": 2
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 3,
+          "col": 5
+        },
+        "to": {
+          "row": 3,
+          "col": 6
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 0
+        },
+        "to": {
+          "row": 5,
+          "col": 0
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 2
+        },
+        "to": {
+          "row": 4,
+          "col": 3
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 2
+        },
+        "to": {
+          "row": 5,
+          "col": 2
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 3
+        },
+        "to": {
+          "row": 5,
+          "col": 3
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 4
+        },
+        "to": {
+          "row": 4,
+          "col": 5
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 4
+        },
+        "to": {
+          "row": 5,
+          "col": 4
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 5
+        },
+        "to": {
+          "row": 5,
+          "col": 5
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 5,
+          "col": 1
+        },
+        "to": {
+          "row": 5,
+          "col": 2
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 5,
+          "col": 3
+        },
+        "to": {
+          "row": 5,
+          "col": 4
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 5,
+          "col": 4
+        },
+        "to": {
+          "row": 6,
+          "col": 4
+        },
+        "type": "x"
+      }
+    ],
+    "metadata": {
+      "generatorVersion": "0.1.0"
+    },
+    "stage": 30,
+    "totalStages": 100,
+    "gameDifficultyKey": "easy",
+    "gameDifficultyLabel": "쉬움"
+  }
+}

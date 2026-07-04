@@ -1,0 +1,204 @@
+{
+  "ok": true,
+  "puzzle": {
+    "id": "tango-8-86ed8c497125",
+    "size": 8,
+    "mode": "standard",
+    "gameDifficulty": "어려움",
+    "difficultyLabel": "어려움",
+    "difficultyLevel": 4,
+    "difficultyScore": 72,
+    "givens": [
+      {
+        "row": 6,
+        "col": 6,
+        "value": "B"
+      }
+    ],
+    "constraints": [
+      {
+        "from": {
+          "row": 0,
+          "col": 0
+        },
+        "to": {
+          "row": 1,
+          "col": 0
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 0,
+          "col": 4
+        },
+        "to": {
+          "row": 0,
+          "col": 5
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 0,
+          "col": 5
+        },
+        "to": {
+          "row": 1,
+          "col": 5
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 1,
+          "col": 5
+        },
+        "to": {
+          "row": 1,
+          "col": 6
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 2,
+          "col": 2
+        },
+        "to": {
+          "row": 2,
+          "col": 3
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 3,
+          "col": 6
+        },
+        "to": {
+          "row": 3,
+          "col": 7
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 1
+        },
+        "to": {
+          "row": 4,
+          "col": 2
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 4
+        },
+        "to": {
+          "row": 5,
+          "col": 4
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 5,
+          "col": 0
+        },
+        "to": {
+          "row": 5,
+          "col": 1
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 5,
+          "col": 4
+        },
+        "to": {
+          "row": 5,
+          "col": 5
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 5,
+          "col": 6
+        },
+        "to": {
+          "row": 6,
+          "col": 6
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 6,
+          "col": 2
+        },
+        "to": {
+          "row": 7,
+          "col": 2
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 6,
+          "col": 5
+        },
+        "to": {
+          "row": 7,
+          "col": 5
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 7,
+          "col": 0
+        },
+        "to": {
+          "row": 7,
+          "col": 1
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 7,
+          "col": 1
+        },
+        "to": {
+          "row": 7,
+          "col": 2
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 7,
+          "col": 3
+        },
+        "to": {
+          "row": 7,
+          "col": 4
+        },
+        "type": "x"
+      }
+    ],
+    "metadata": {
+      "generatorVersion": "0.1.0"
+    },
+    "stage": 43,
+    "totalStages": 50,
+    "gameDifficultyKey": "hard",
+    "gameDifficultyLabel": "어려움"
+  }
+}

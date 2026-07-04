@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "groups": [
+    {
+      "size": 6,
+      "difficulties": [
+        {
+          "key": "easy",
+          "label": "쉬움",
+          "count": 50
+        },
+        {
+          "key": "hard",
+          "label": "어려움",
+          "count": 100
+        }
+      ]
+    },
+    {
+      "size": 8,
+      "difficulties": [
+        {
+          "key": "easy",
+          "label": "쉬움",
+          "count": 100
+        },
+        {
+          "key": "hard",
+          "label": "어려움",
+          "count": 50
+        }
+      ]
+    }
+  ]
+}
