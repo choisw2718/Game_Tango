@@ -2,6 +2,7 @@ import { cloneBoard, normalizeConstraint, } from "../core/rules.js";
 import { validateBoard } from "../core/validateBoard.js";
 import { getNextHint } from "../game/hintEngine.js";
 import { clampStage, createDraftBoard, formatElapsedTime, loadStageList, loadStageMenu, loadStagePuzzle, nextUnlockedStage, stageProgressKey, } from "./puzzleData.js";
+import { createAccount, createLinkCode, ensureAnonymousSession, getMyAccount, getProgress, redeemLinkCode, saveProgress, } from "./supabaseClient.js";
 const PACK_OPTIONS = [
     { size: 6, difficulty: "easy", label: "6x6 쉬움" },
     { size: 6, difficulty: "hard", label: "6x6 어려움" },
@@ -13,6 +14,7 @@ const DIFFICULTY_LABEL = {
     hard: "어려움",
 };
 const TUTORIAL_STORAGE_KEY = "tango:tutorial-seen:v3";
+const CLOUD_PROGRESS_VERSION = 1;
 const VALUE_TO_CLASS = {
     A: "filled",
     B: "hollow",
@@ -22,7 +24,9 @@ const VALUE_TO_LABEL = {
     B: "white",
 };
 const state = {
-    view: "menu",
+    view: "account",
+    account: null,
+    guestMode: false,
     menu: [],
     selectedSize: 6,
     selectedDifficulty: "easy",
@@ -43,7 +47,27 @@ const state = {
     timerIntervalId: null,
     validationTimeoutIds: new Map(),
     solved: false,
+    progress: createEmptyProgress(),
+    progressLoaded: false,
+    progressSaveTimeoutId: null,
+    progressSaveInFlight: false,
+    progressSavePending: false,
 };
+const accountBar = requireElement("#accountBar");
+const accountLabel = requireElement("#accountLabel");
+const accountNickname = requireElement("#accountNickname");
+const createLinkCodeButton = requireElement("#createLinkCodeButton");
+const linkCodeText = requireElement("#linkCodeText");
+const accountScreen = requireElement("#accountScreen");
+const createAccountForm = requireElement("#createAccountForm");
+const createNicknameInput = requireElement("#createNicknameInput");
+const createAccountButton = requireElement("#createAccountButton");
+const linkAccountForm = requireElement("#linkAccountForm");
+const linkNicknameInput = requireElement("#linkNicknameInput");
+const linkCodeInput = requireElement("#linkCodeInput");
+const linkAccountButton = requireElement("#linkAccountButton");
+const guestPlayButton = requireElement("#guestPlayButton");
+const accountStatus = requireElement("#accountStatus");
 const menuButton = requireElement("#menuButton");
 const tutorialButton = requireElement("#tutorialButton");
 const tutorialModal = requireElement("#tutorialModal");
@@ -74,8 +98,33 @@ const hintText = requireElement("#hintText");
 const boardFrame = requireElement("#boardFrame");
 const boardGrid = requireElement("#boardGrid");
 const conditionLayer = requireElement("#conditionLayer");
+const completionModal = requireElement("#completionModal");
+const completionConfetti = requireElement("#completionConfetti");
+const completionElapsedText = requireElement("#completionElapsedText");
+const completionStageText = requireElement("#completionStageText");
+const completionCloseButton = requireElement("#completionCloseButton");
+const completionStageListButton = requireElement("#completionStageListButton");
+const completionNextStageButton = requireElement("#completionNextStageButton");
 let tutorialPreviouslyFocused = null;
 let tutorialPageIndex = 0;
+let completionPreviouslyFocused = null;
+let completionEffectCleanupId = null;
+const CONFETTI_COLORS = ["#0f8f65", "#0f7c55", "#f0ca2e", "#c2475a", "#1d6fd8", "#151a17"];
+const CONFETTI_COUNT = 64;
+createAccountForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void handleCreateAccount();
+});
+linkAccountForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void handleRedeemLinkCode();
+});
+createLinkCodeButton.addEventListener("click", () => {
+    void handleCreateLinkCode();
+});
+guestPlayButton.addEventListener("click", () => {
+    void handleGuestPlay();
+});
 menuButton.addEventListener("click", () => {
     showMenuScreen();
 });
@@ -101,8 +150,40 @@ tutorialModal.addEventListener("click", (event) => {
     }
 });
 document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !tutorialModal.classList.contains("is-hidden")) {
+    if (event.key !== "Escape") {
+        return;
+    }
+    if (!tutorialModal.classList.contains("is-hidden")) {
+        event.preventDefault();
         hideTutorial();
+        return;
+    }
+    if (!completionModal.classList.contains("is-hidden")) {
+        event.preventDefault();
+        hideCompletionDialog();
+    }
+});
+completionModal.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof Element && target.hasAttribute("data-completion-close")) {
+        hideCompletionDialog();
+    }
+});
+completionCloseButton.addEventListener("click", () => {
+    hideCompletionDialog();
+});
+completionStageListButton.addEventListener("click", () => {
+    hideCompletionDialog(false);
+    showStageScreen();
+});
+completionNextStageButton.addEventListener("click", () => {
+    if (!state.puzzle || state.loading || !state.solved) {
+        return;
+    }
+    const nextStage = state.puzzle.stage + 1;
+    if (nextStage <= state.unlockedStage && nextStage <= state.stages.length) {
+        hideCompletionDialog(false);
+        void loadStage(nextStage);
     }
 });
 backToMenuButton.addEventListener("click", () => {
@@ -221,7 +302,7 @@ function showTutorial() {
     setTutorialPage(0, false);
     tutorialModal.classList.remove("is-hidden");
     tutorialModal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
+    syncModalOpenState();
     tutorialNextButton.focus();
 }
 function hideTutorial() {
@@ -231,9 +312,103 @@ function hideTutorial() {
     markTutorialSeen();
     tutorialModal.classList.add("is-hidden");
     tutorialModal.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
+    syncModalOpenState();
     tutorialPreviouslyFocused?.focus();
     tutorialPreviouslyFocused = null;
+}
+function showCompletionDialog(puzzle, elapsed) {
+    completionPreviouslyFocused =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    completionElapsedText.textContent = `풀이 시간 ${elapsed}`;
+    const canGoNext = puzzle.stage < state.unlockedStage && puzzle.stage < state.stages.length;
+    completionStageText.textContent =
+        puzzle.stage >= puzzle.totalStages
+            ? "마지막 Stage를 완료했습니다."
+            : `Stage ${puzzle.stage}를 완료했습니다. 다음 Stage로 진행할 수 있습니다.`;
+    completionNextStageButton.classList.toggle("is-hidden", !canGoNext);
+    completionNextStageButton.disabled = !canGoNext;
+    completionModal.classList.remove("is-hidden");
+    completionModal.setAttribute("aria-hidden", "false");
+    syncModalOpenState();
+    playCompletionEffects();
+    window.requestAnimationFrame(() => {
+        if (!completionModal.classList.contains("is-hidden")) {
+            (canGoNext ? completionNextStageButton : completionStageListButton).focus();
+        }
+    });
+}
+function hideCompletionDialog(restoreFocus = true) {
+    if (completionModal.classList.contains("is-hidden")) {
+        return;
+    }
+    completionModal.classList.add("is-hidden");
+    completionModal.setAttribute("aria-hidden", "true");
+    clearCompletionEffects();
+    syncModalOpenState();
+    if (restoreFocus) {
+        completionPreviouslyFocused?.focus();
+    }
+    completionPreviouslyFocused = null;
+}
+function playCompletionEffects() {
+    triggerSuccessHaptic();
+    launchConfetti();
+    completionModal.classList.remove("is-celebrating");
+    window.requestAnimationFrame(() => {
+        if (!completionModal.classList.contains("is-hidden")) {
+            completionModal.classList.add("is-celebrating");
+        }
+    });
+}
+function triggerSuccessHaptic() {
+    const vibrationNavigator = navigator;
+    if (typeof vibrationNavigator.vibrate !== "function") {
+        return;
+    }
+    try {
+        vibrationNavigator.vibrate([35, 35, 70]);
+    }
+    catch {
+        // Unsupported browsers and device settings can block vibration.
+    }
+}
+function launchConfetti() {
+    clearCompletionEffects();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+    }
+    const fragment = document.createDocumentFragment();
+    for (let index = 0; index < CONFETTI_COUNT; index += 1) {
+        const piece = document.createElement("span");
+        const width = 6 + Math.round(Math.random() * 7);
+        const height = 8 + Math.round(Math.random() * 12);
+        piece.className = Math.random() > 0.72 ? "confetti-piece is-round" : "confetti-piece";
+        piece.style.setProperty("--x", String(3 + Math.random() * 94));
+        piece.style.setProperty("--drift", `${Math.round((Math.random() - 0.5) * 260)}px`);
+        piece.style.setProperty("--delay", `${Math.random() * 0.22}s`);
+        piece.style.setProperty("--duration", `${1.05 + Math.random() * 0.8}s`);
+        piece.style.setProperty("--rotate", `${Math.round(260 + Math.random() * 620)}deg`);
+        piece.style.setProperty("--piece-width", `${width}px`);
+        piece.style.setProperty("--piece-height", `${height}px`);
+        const pieceColor = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)] ?? "#0f8f65";
+        piece.style.setProperty("--piece-color", pieceColor);
+        fragment.append(piece);
+    }
+    completionConfetti.append(fragment);
+    completionEffectCleanupId = window.setTimeout(clearCompletionEffects, 2400);
+}
+function clearCompletionEffects() {
+    if (completionEffectCleanupId !== null) {
+        window.clearTimeout(completionEffectCleanupId);
+        completionEffectCleanupId = null;
+    }
+    completionConfetti.innerHTML = "";
+    completionModal.classList.remove("is-celebrating");
+}
+function syncModalOpenState() {
+    const hasOpenModal = !tutorialModal.classList.contains("is-hidden") ||
+        !completionModal.classList.contains("is-hidden");
+    document.body.classList.toggle("modal-open", hasOpenModal);
 }
 function hasSeenTutorial() {
     try {
@@ -274,25 +449,323 @@ function setTutorialPage(pageIndex, shouldFocusAction) {
     }
 }
 async function initialize() {
-    setView("menu");
+    setView("account");
     setLoading(true);
-    menuStatus.textContent = "게임 목록을 불러오는 중입니다.";
+    setAccountBusy(true);
+    accountStatus.textContent = "Supabase 익명 로그인과 닉네임 계정을 확인하는 중입니다.";
     try {
-        state.menu = await loadStageMenu();
-        renderMenuChoices();
-        menuStatus.textContent = hasAnyPlayablePack()
-            ? "원하는 카드를 누르면 Stage 목록으로 이동합니다."
-            : "사용 가능한 DB 문제가 없습니다.";
+        await ensureAnonymousSession();
+        if (state.guestMode) {
+            return;
+        }
+        state.account = await getMyAccount();
+        if (state.guestMode) {
+            return;
+        }
+        renderAccountState();
+        if (!state.account) {
+            accountStatus.textContent =
+                "이 기기는 아직 닉네임 계정에 연결되어 있지 않습니다.";
+            return;
+        }
+        await loadAccountProgress();
+        await loadGameMenu();
     }
     catch (error) {
-        menuStatus.textContent =
-            error instanceof Error ? error.message : "게임 목록을 불러오지 못했습니다.";
+        if (state.guestMode) {
+            return;
+        }
+        accountStatus.textContent = getErrorMessage(error, "Supabase 계정 정보를 불러오지 못했습니다.");
     }
     finally {
+        renderAccountState();
+        setAccountBusy(false);
         setLoading(false);
     }
 }
+async function loadGameMenu() {
+    setView("menu");
+    menuStatus.textContent = "게임 목록을 불러오는 중입니다.";
+    state.menu = await loadStageMenu();
+    renderMenuChoices();
+    menuStatus.textContent = hasAnyPlayablePack()
+        ? "원하는 카드를 누르면 Stage 목록으로 이동합니다."
+        : "사용 가능한 DB 문제가 없습니다.";
+}
+async function handleCreateAccount() {
+    const nickname = createNicknameInput.value.trim();
+    if (!nickname) {
+        accountStatus.textContent = "닉네임을 입력하세요.";
+        return;
+    }
+    setAccountBusy(true);
+    setLoading(true);
+    accountStatus.textContent = "닉네임 계정을 만드는 중입니다.";
+    try {
+        state.account = await createAccount(nickname);
+        state.guestMode = false;
+        createNicknameInput.value = "";
+        renderAccountState();
+        await loadAccountProgress();
+        await loadGameMenu();
+    }
+    catch (error) {
+        accountStatus.textContent = getErrorMessage(error, "닉네임 계정을 만들지 못했습니다.");
+    }
+    finally {
+        setAccountBusy(false);
+        setLoading(false);
+        renderAccountState();
+    }
+}
+async function handleRedeemLinkCode() {
+    const nickname = linkNicknameInput.value.trim();
+    const code = linkCodeInput.value.trim();
+    if (!nickname || !code) {
+        accountStatus.textContent = "닉네임과 6자리 연결 코드를 입력하세요.";
+        return;
+    }
+    setAccountBusy(true);
+    setLoading(true);
+    accountStatus.textContent = "기존 닉네임 계정에 연결하는 중입니다.";
+    try {
+        const account = await redeemLinkCode(nickname, code);
+        if (!account) {
+            accountStatus.textContent = "닉네임이나 연결 코드가 올바르지 않습니다.";
+            return;
+        }
+        state.account = account;
+        state.guestMode = false;
+        linkNicknameInput.value = "";
+        linkCodeInput.value = "";
+        renderAccountState();
+        await loadAccountProgress();
+        await loadGameMenu();
+    }
+    catch (error) {
+        accountStatus.textContent = getErrorMessage(error, "기존 계정에 연결하지 못했습니다.");
+    }
+    finally {
+        setAccountBusy(false);
+        setLoading(false);
+        renderAccountState();
+    }
+}
+async function handleCreateLinkCode() {
+    if (!state.account) {
+        return;
+    }
+    createLinkCodeButton.disabled = true;
+    linkCodeText.classList.remove("is-hidden");
+    linkCodeText.textContent = "코드 생성 중";
+    try {
+        const linkCode = await createLinkCode();
+        const expiresAt = new Date(linkCode.expires_at);
+        const expiresText = Number.isNaN(expiresAt.getTime())
+            ? "10분 후 만료"
+            : `${expiresAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} 만료`;
+        linkCodeText.textContent = `${linkCode.code} (${expiresText})`;
+    }
+    catch (error) {
+        linkCodeText.textContent = getErrorMessage(error, "연결 코드를 만들지 못했습니다.");
+    }
+    finally {
+        updateControls();
+    }
+}
+async function handleGuestPlay() {
+    state.account = null;
+    state.guestMode = true;
+    state.progress = readLocalProgress();
+    state.progressLoaded = true;
+    renderAccountState();
+    setAccountBusy(true);
+    setLoading(true);
+    accountStatus.textContent = "게스트 모드로 시작합니다. 진행도는 이 브라우저에만 저장됩니다.";
+    try {
+        await loadGameMenu();
+    }
+    catch (error) {
+        setView("account");
+        accountStatus.textContent = getErrorMessage(error, "게임 목록을 불러오지 못했습니다.");
+    }
+    finally {
+        setAccountBusy(false);
+        setLoading(false);
+        renderAccountState();
+    }
+}
+async function loadAccountProgress() {
+    const remoteProgress = normalizeCloudProgress(await getProgress());
+    const localProgress = readLocalProgress();
+    const merged = mergeProgress(remoteProgress, localProgress);
+    state.progress = merged.progress;
+    state.progressLoaded = true;
+    writeProgressToLocalStorage(state.progress);
+    if (merged.shouldSave) {
+        await saveProgress(state.progress);
+    }
+}
+function renderAccountState() {
+    const account = state.account;
+    const canPlayCurrentSession = canPlay();
+    accountBar.classList.toggle("is-hidden", !canPlayCurrentSession);
+    accountLabel.textContent = account ? "닉네임" : "모드";
+    accountNickname.textContent = account?.account_nickname ?? (state.guestMode ? "게스트" : "");
+    createLinkCodeButton.classList.toggle("is-hidden", !account);
+    if (!account) {
+        linkCodeText.classList.add("is-hidden");
+        linkCodeText.textContent = "";
+    }
+    updateControls();
+}
+function setAccountBusy(busy) {
+    createNicknameInput.disabled = busy;
+    createAccountButton.disabled = busy;
+    linkNicknameInput.disabled = busy;
+    linkCodeInput.disabled = busy;
+    linkAccountButton.disabled = busy;
+    createLinkCodeButton.disabled = busy || !state.account;
+    guestPlayButton.disabled = state.guestMode;
+}
+function canPlay() {
+    return state.account !== null || state.guestMode;
+}
+function createEmptyProgress() {
+    return {
+        version: CLOUD_PROGRESS_VERSION,
+        stages: {},
+        updatedAt: new Date(0).toISOString(),
+    };
+}
+function readLocalProgress() {
+    const progress = createEmptyProgress();
+    for (const option of PACK_OPTIONS) {
+        const stage = readLocalUnlockedStage(option.size, option.difficulty);
+        if (stage > 1) {
+            progress.stages[progressStageId(option.size, option.difficulty)] = stage;
+        }
+    }
+    return progress;
+}
+function normalizeCloudProgress(input) {
+    if (!isRecord(input)) {
+        return createEmptyProgress();
+    }
+    const progress = createEmptyProgress();
+    const rawStages = isRecord(input.stages) ? input.stages : {};
+    progress.updatedAt = typeof input.updatedAt === "string" ? input.updatedAt : progress.updatedAt;
+    for (const option of PACK_OPTIONS) {
+        const key = progressStageId(option.size, option.difficulty);
+        const stage = normalizeStageValue(rawStages[key]);
+        if (stage > 1) {
+            progress.stages[key] = stage;
+        }
+    }
+    return progress;
+}
+function mergeProgress(remoteProgress, localProgress) {
+    const progress = createEmptyProgress();
+    let shouldSave = false;
+    for (const option of PACK_OPTIONS) {
+        const key = progressStageId(option.size, option.difficulty);
+        const remoteStage = remoteProgress.stages[key] ?? 1;
+        const localStage = localProgress.stages[key] ?? 1;
+        const mergedStage = Math.max(remoteStage, localStage);
+        if (mergedStage > 1) {
+            progress.stages[key] = mergedStage;
+        }
+        if (mergedStage !== remoteStage) {
+            shouldSave = true;
+        }
+    }
+    progress.updatedAt = shouldSave ? new Date().toISOString() : remoteProgress.updatedAt;
+    return { progress, shouldSave };
+}
+function updateProgressStage(size, difficulty, unlockedStage) {
+    const key = progressStageId(size, difficulty);
+    const normalizedStage = Math.max(1, Math.trunc(unlockedStage));
+    const currentStage = state.progress.stages[key] ?? 1;
+    if (normalizedStage <= currentStage) {
+        return;
+    }
+    state.progress.stages[key] = normalizedStage;
+    state.progress.updatedAt = new Date().toISOString();
+    writeProgressToLocalStorage(state.progress);
+    scheduleProgressSave();
+}
+function scheduleProgressSave() {
+    if (!state.account || !state.progressLoaded) {
+        return;
+    }
+    if (state.progressSaveTimeoutId !== null) {
+        window.clearTimeout(state.progressSaveTimeoutId);
+    }
+    state.progressSaveTimeoutId = window.setTimeout(() => {
+        state.progressSaveTimeoutId = null;
+        void flushProgressSave();
+    }, 400);
+}
+async function flushProgressSave() {
+    if (!state.account || !state.progressLoaded) {
+        return;
+    }
+    if (state.progressSaveInFlight) {
+        state.progressSavePending = true;
+        return;
+    }
+    state.progressSaveInFlight = true;
+    try {
+        await saveProgress(state.progress);
+    }
+    catch (error) {
+        console.error("Failed to save Supabase progress", error);
+    }
+    finally {
+        state.progressSaveInFlight = false;
+        if (state.progressSavePending) {
+            state.progressSavePending = false;
+            scheduleProgressSave();
+        }
+    }
+}
+function writeProgressToLocalStorage(progress) {
+    try {
+        for (const option of PACK_OPTIONS) {
+            const stage = progress.stages[progressStageId(option.size, option.difficulty)] ?? 1;
+            window.localStorage.setItem(stageProgressKey(option.size, option.difficulty), String(stage));
+        }
+    }
+    catch {
+        // localStorage can be unavailable in strict privacy modes.
+    }
+}
+function readLocalUnlockedStage(size, difficulty) {
+    try {
+        return normalizeStageValue(window.localStorage.getItem(stageProgressKey(size, difficulty)));
+    }
+    catch {
+        return 1;
+    }
+}
+function normalizeStageValue(value) {
+    const stage = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(stage) && stage > 1 ? Math.trunc(stage) : 1;
+}
+function progressStageId(size, difficulty) {
+    return `${size}:${difficulty}`;
+}
+function isRecord(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function getErrorMessage(error, fallback) {
+    return error instanceof Error ? error.message : fallback;
+}
 async function selectPack(size, difficulty) {
+    if (!canPlay()) {
+        setView("account");
+        return;
+    }
     state.selectedSize = size;
     state.selectedDifficulty = difficulty;
     state.stages = [];
@@ -325,6 +798,10 @@ async function selectPack(size, difficulty) {
     }
 }
 async function loadStage(stage) {
+    if (!canPlay()) {
+        setView("account");
+        return;
+    }
     const clampedStage = clampStage(stage, state.stages.length);
     if (clampedStage > state.unlockedStage) {
         stageStatus.textContent = `Stage ${clampedStage}는 이전 Stage를 완료하면 열립니다.`;
@@ -363,6 +840,7 @@ function clearBoard() {
     if (!state.puzzle || state.loading) {
         return;
     }
+    hideCompletionDialog(false);
     clearPendingValidation();
     state.board = createDraftBoard(state.puzzle);
     state.checkpoint = null;
@@ -391,6 +869,7 @@ function restoreCheckpoint() {
     if (!state.puzzle || state.loading || !state.checkpoint) {
         return;
     }
+    hideCompletionDialog(false);
     clearPendingValidation();
     state.board = cloneBoard(state.checkpoint);
     state.solved = false;
@@ -419,6 +898,10 @@ async function showHint() {
     updateControls();
 }
 function showMenuScreen() {
+    if (!canPlay()) {
+        setView("account");
+        return;
+    }
     clearCurrentPuzzle();
     setView("menu");
     renderMenuChoices();
@@ -427,6 +910,10 @@ function showMenuScreen() {
         : "사용 가능한 DB 문제가 없습니다.";
 }
 function showStageScreen() {
+    if (!canPlay()) {
+        setView("account");
+        return;
+    }
     clearCurrentPuzzle();
     setView("stages");
     renderSelectedPackHeader();
@@ -437,6 +924,7 @@ function showStageScreen() {
             : "먼저 게임 선택 화면에서 크기와 난이도를 고르세요.";
 }
 function clearCurrentPuzzle() {
+    hideCompletionDialog(false);
     clearPendingValidation();
     stopTimer();
     state.puzzle = null;
@@ -457,6 +945,7 @@ function clearCurrentPuzzle() {
 }
 function setView(view) {
     state.view = view;
+    accountScreen.classList.toggle("is-hidden", view !== "account");
     menuScreen.classList.toggle("is-hidden", view !== "menu");
     stageScreen.classList.toggle("is-hidden", view !== "stages");
     gameScreen.classList.toggle("is-hidden", view !== "puzzle");
@@ -680,7 +1169,8 @@ function updateValidationStatus(options = {}) {
         clearPendingValidation();
         resetWrongCellTracking();
         state.violationKeys = new Set();
-        if (!state.solved) {
+        const newlySolved = !state.solved;
+        if (newlySolved) {
             stopTimer();
             state.solved = true;
         }
@@ -692,6 +1182,9 @@ function updateValidationStatus(options = {}) {
                 : `완료. ${elapsed}`;
         updateControls();
         renderStageGrid();
+        if (newlySolved) {
+            showCompletionDialog(puzzle, elapsed);
+        }
         return;
     }
     if (options.focusKey) {
@@ -795,12 +1288,13 @@ function unlockNextStage(stage) {
     const nextUnlocked = nextUnlockedStage(stage, state.puzzle.totalStages, state.unlockedStage);
     if (nextUnlocked > state.unlockedStage) {
         state.unlockedStage = nextUnlocked;
-        localStorage.setItem(progressKey(), String(nextUnlocked));
+        updateProgressStage(state.selectedSize, state.selectedDifficulty, nextUnlocked);
         renderSelectedPackHeader();
     }
 }
 function updateControls() {
-    menuButton.disabled = state.loading;
+    menuButton.disabled = state.loading || !canPlay();
+    createLinkCodeButton.disabled = state.loading || !state.account;
     backToMenuButton.disabled = state.loading;
     backToStagesButton.disabled = state.loading || state.stages.length === 0;
     checkpointSaveButton.disabled = state.loading || !state.puzzle || state.solved;
@@ -871,11 +1365,10 @@ function getUnlockedStage() {
     return getStoredUnlockedStage(state.selectedSize, state.selectedDifficulty, state.stages.length);
 }
 function getStoredUnlockedStage(size, difficulty, totalStages) {
-    const stored = Number(localStorage.getItem(stageProgressKey(size, difficulty)) ?? "1");
-    return clampStage(stored, Math.max(totalStages, 1));
-}
-function progressKey() {
-    return stageProgressKey(state.selectedSize, state.selectedDifficulty);
+    const progressStage = state.progressLoaded
+        ? state.progress.stages[progressStageId(size, difficulty)] ?? 1
+        : readLocalUnlockedStage(size, difficulty);
+    return clampStage(progressStage, Math.max(totalStages, 1));
 }
 function getPackCount(size, difficulty) {
     const group = state.menu.find((item) => item.size === size);
