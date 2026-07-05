@@ -13,7 +13,10 @@
           <p class="eyebrow">Tango puzzle</p>
           <h1>Tango</h1>
         </div>
-        <button class="menu-tab is-active" id="menuButton" type="button">게임 선택</button>
+        <div class="topbar-actions">
+          <button class="menu-tab tutorial-tab" id="tutorialButton" type="button">규칙</button>
+          <button class="menu-tab is-active" id="menuButton" type="button">게임 선택</button>
+        </div>
       </header>
 
       <section class="screen menu-screen" id="menuScreen" aria-label="메뉴">
@@ -99,6 +102,52 @@
         </section>
       </section>
     </main>
+
+    <section
+      class="tutorial-modal is-hidden"
+      id="tutorialModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tutorialTitle"
+      aria-describedby="tutorialDescription"
+      aria-hidden="true"
+    >
+      <div class="tutorial-backdrop" data-tutorial-close></div>
+      <div class="tutorial-panel">
+        <div class="tutorial-head">
+          <div>
+            <p class="eyebrow">How to play</p>
+            <h2 id="tutorialTitle">Tango 규칙</h2>
+          </div>
+          <button
+            class="tutorial-close"
+            id="tutorialCloseButton"
+            type="button"
+            aria-label="튜토리얼 닫기"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="tutorial-body" id="tutorialDescription">
+          <p>
+            빈칸을 눌러 검은돌과 흰돌을 채우세요. 한 번 누르면 검은돌, 두 번 누르면
+            흰돌, 세 번 누르면 다시 빈칸이 됩니다.
+          </p>
+          <ol class="tutorial-rules">
+            <li>각 행과 열에는 검은돌과 흰돌이 같은 개수로 들어갑니다.</li>
+            <li>같은 돌이 가로 또는 세로로 3개 연속되면 안 됩니다.</li>
+            <li><strong>=</strong> 표시는 양쪽 칸이 같은 돌이어야 합니다.</li>
+            <li><strong>x</strong> 표시는 양쪽 칸이 서로 다른 돌이어야 합니다.</li>
+            <li>모든 조건을 만족하면 Stage가 완료되고 다음 Stage가 열립니다.</li>
+          </ol>
+        </div>
+
+        <button class="primary-button tutorial-start" id="tutorialStartButton" type="button">
+          시작하기
+        </button>
+      </div>
+    </section>
 
     <script type="module" src="./assets/web/app.js"></script>
   </body>

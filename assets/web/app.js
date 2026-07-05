@@ -12,6 +12,7 @@ const DIFFICULTY_LABEL = {
     easy: "쉬움",
     hard: "어려움",
 };
+const TUTORIAL_STORAGE_KEY = "tango:tutorial-seen:v1";
 const VALUE_TO_CLASS = {
     A: "filled",
     B: "hollow",
@@ -44,6 +45,10 @@ const state = {
     solved: false,
 };
 const menuButton = requireElement("#menuButton");
+const tutorialButton = requireElement("#tutorialButton");
+const tutorialModal = requireElement("#tutorialModal");
+const tutorialCloseButton = requireElement("#tutorialCloseButton");
+const tutorialStartButton = requireElement("#tutorialStartButton");
 const menuScreen = requireElement("#menuScreen");
 const choiceGrid = requireElement("#choiceGrid");
 const menuStatus = requireElement("#menuStatus");
@@ -67,8 +72,29 @@ const hintText = requireElement("#hintText");
 const boardFrame = requireElement("#boardFrame");
 const boardGrid = requireElement("#boardGrid");
 const conditionLayer = requireElement("#conditionLayer");
+let tutorialPreviouslyFocused = null;
 menuButton.addEventListener("click", () => {
     showMenuScreen();
+});
+tutorialButton.addEventListener("click", () => {
+    showTutorial();
+});
+tutorialCloseButton.addEventListener("click", () => {
+    hideTutorial();
+});
+tutorialStartButton.addEventListener("click", () => {
+    hideTutorial();
+});
+tutorialModal.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof Element && target.hasAttribute("data-tutorial-close")) {
+        hideTutorial();
+    }
+});
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !tutorialModal.classList.contains("is-hidden")) {
+        hideTutorial();
+    }
 });
 backToMenuButton.addEventListener("click", () => {
     showMenuScreen();
@@ -173,7 +199,48 @@ boardGrid.addEventListener("click", (event) => {
         scheduleValidationStatus(row, col);
     }
 });
+showTutorialOnFirstVisit();
 void initialize();
+function showTutorialOnFirstVisit() {
+    if (!hasSeenTutorial()) {
+        showTutorial();
+    }
+}
+function showTutorial() {
+    tutorialPreviouslyFocused =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    tutorialModal.classList.remove("is-hidden");
+    tutorialModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    tutorialStartButton.focus();
+}
+function hideTutorial() {
+    if (tutorialModal.classList.contains("is-hidden")) {
+        return;
+    }
+    markTutorialSeen();
+    tutorialModal.classList.add("is-hidden");
+    tutorialModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+    tutorialPreviouslyFocused?.focus();
+    tutorialPreviouslyFocused = null;
+}
+function hasSeenTutorial() {
+    try {
+        return window.localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true";
+    }
+    catch {
+        return false;
+    }
+}
+function markTutorialSeen() {
+    try {
+        window.localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
+    }
+    catch {
+        // localStorage can be unavailable in strict privacy modes.
+    }
+}
 async function initialize() {
     setView("menu");
     setLoading(true);
