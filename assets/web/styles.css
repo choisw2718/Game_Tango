@@ -779,19 +779,35 @@ body.modal-open {
   gap: 14px;
 }
 
+.tutorial-page {
+  display: grid;
+  gap: 14px;
+}
+
+.tutorial-step-indicator {
+  justify-self: start;
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.tutorial-page-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1.1;
+}
+
 .tutorial-body p {
   margin: 0;
   color: var(--text);
   font-size: 15px;
   font-weight: 800;
   line-height: 1.5;
-}
-
-.tutorial-section-title {
-  margin: 4px 0 -4px;
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1.2;
 }
 
 .tutorial-rules,
@@ -812,9 +828,86 @@ body.modal-open {
   font-size: 16px;
 }
 
+.tutorial-layout-map {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--surface-strong);
+}
+
+.tutorial-map-row,
+.tutorial-map-tools {
+  display: grid;
+  gap: 8px;
+}
+
+.tutorial-map-row {
+  grid-template-columns: 1fr 1fr;
+}
+
+.tutorial-map-tools {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tutorial-map-row span,
+.tutorial-map-tools span,
+.button-name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border: 1px solid rgb(24 32 28 / 0.12);
+  border-radius: 8px;
+  padding: 5px 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.tutorial-map-board {
+  display: grid;
+  min-height: 132px;
+  place-items: center;
+  border: 2px dashed color-mix(in srgb, var(--condition) 45%, white);
+  border-radius: 8px;
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px),
+    var(--surface);
+  background-size: 25% 25%;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.button-name {
+  min-height: 24px;
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
+.tutorial-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.tutorial-actions .primary-button {
+  min-height: 48px;
+}
+
+.tutorial-next,
 .tutorial-start {
   width: 100%;
   min-height: 48px;
+}
+
+.tutorial-prev.is-hidden + .tutorial-next {
+  grid-column: 1 / -1;
 }
 
 .primary-button:focus-visible,
@@ -915,5 +1008,14 @@ body.modal-open {
     max-height: calc(100vh - 20px);
     gap: 14px;
     padding: 18px;
+  }
+
+  .tutorial-map-board {
+    min-height: 110px;
+  }
+
+  .tutorial-map-row,
+  .tutorial-map-tools {
+    grid-template-columns: 1fr;
   }
 }

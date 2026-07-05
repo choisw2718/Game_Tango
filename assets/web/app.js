@@ -12,7 +12,7 @@ const DIFFICULTY_LABEL = {
     easy: "쉬움",
     hard: "어려움",
 };
-const TUTORIAL_STORAGE_KEY = "tango:tutorial-seen:v2";
+const TUTORIAL_STORAGE_KEY = "tango:tutorial-seen:v3";
 const VALUE_TO_CLASS = {
     A: "filled",
     B: "hollow",
@@ -48,6 +48,8 @@ const menuButton = requireElement("#menuButton");
 const tutorialButton = requireElement("#tutorialButton");
 const tutorialModal = requireElement("#tutorialModal");
 const tutorialCloseButton = requireElement("#tutorialCloseButton");
+const tutorialPrevButton = requireElement("#tutorialPrevButton");
+const tutorialNextButton = requireElement("#tutorialNextButton");
 const tutorialStartButton = requireElement("#tutorialStartButton");
 const menuScreen = requireElement("#menuScreen");
 const choiceGrid = requireElement("#choiceGrid");
@@ -73,6 +75,7 @@ const boardFrame = requireElement("#boardFrame");
 const boardGrid = requireElement("#boardGrid");
 const conditionLayer = requireElement("#conditionLayer");
 let tutorialPreviouslyFocused = null;
+let tutorialPageIndex = 0;
 menuButton.addEventListener("click", () => {
     showMenuScreen();
 });
@@ -81,6 +84,12 @@ tutorialButton.addEventListener("click", () => {
 });
 tutorialCloseButton.addEventListener("click", () => {
     hideTutorial();
+});
+tutorialPrevButton.addEventListener("click", () => {
+    setTutorialPage(tutorialPageIndex - 1, true);
+});
+tutorialNextButton.addEventListener("click", () => {
+    setTutorialPage(tutorialPageIndex + 1, true);
 });
 tutorialStartButton.addEventListener("click", () => {
     hideTutorial();
@@ -209,10 +218,11 @@ function showTutorialOnFirstVisit() {
 function showTutorial() {
     tutorialPreviouslyFocused =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setTutorialPage(0, false);
     tutorialModal.classList.remove("is-hidden");
     tutorialModal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
-    tutorialStartButton.focus();
+    tutorialNextButton.focus();
 }
 function hideTutorial() {
     if (tutorialModal.classList.contains("is-hidden")) {
@@ -239,6 +249,28 @@ function markTutorialSeen() {
     }
     catch {
         // localStorage can be unavailable in strict privacy modes.
+    }
+}
+function setTutorialPage(pageIndex, shouldFocusAction) {
+    const pages = Array.from(document.querySelectorAll(".tutorial-page"));
+    if (pages.length === 0) {
+        return;
+    }
+    tutorialPageIndex = Math.max(0, Math.min(pageIndex, pages.length - 1));
+    const isFirstPage = tutorialPageIndex === 0;
+    const isLastPage = tutorialPageIndex === pages.length - 1;
+    for (const [index, page] of pages.entries()) {
+        const isActive = index === tutorialPageIndex;
+        page.classList.toggle("is-hidden", !isActive);
+        page.setAttribute("aria-hidden", String(!isActive));
+    }
+    tutorialPrevButton.classList.toggle("is-hidden", isFirstPage);
+    tutorialPrevButton.disabled = isFirstPage;
+    tutorialNextButton.classList.toggle("is-hidden", isLastPage);
+    tutorialNextButton.disabled = isLastPage;
+    tutorialStartButton.classList.toggle("is-hidden", !isLastPage);
+    if (shouldFocusAction) {
+        (isLastPage ? tutorialStartButton : tutorialNextButton).focus();
     }
 }
 async function initialize() {
