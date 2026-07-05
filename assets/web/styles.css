@@ -41,6 +41,8 @@ body {
 
 button {
   font: inherit;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app-shell {
@@ -612,6 +614,9 @@ h2 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .board-grid {
@@ -620,6 +625,7 @@ h2 {
   display: grid;
   grid-template-columns: repeat(var(--size), 1fr);
   grid-template-rows: repeat(var(--size), 1fr);
+  touch-action: manipulation;
 }
 
 .cell {
@@ -633,6 +639,9 @@ h2 {
   background: var(--surface);
   cursor: pointer;
   padding: 0;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .cell.given {
@@ -661,6 +670,9 @@ h2 {
   width: clamp(28px, calc(100% - 34px), 48px);
   aspect-ratio: 1;
   border-radius: 50%;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .symbol.filled {
