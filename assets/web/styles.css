@@ -787,7 +787,15 @@ body.modal-open {
   line-height: 1.5;
 }
 
-.tutorial-rules {
+.tutorial-section-title {
+  margin: 4px 0 -4px;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.tutorial-rules,
+.tutorial-features {
   display: grid;
   gap: 10px;
   margin: 0;
@@ -798,7 +806,8 @@ body.modal-open {
   line-height: 1.5;
 }
 
-.tutorial-rules strong {
+.tutorial-rules strong,
+.tutorial-features strong {
   color: var(--text);
   font-size: 16px;
 }

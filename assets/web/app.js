@@ -12,7 +12,7 @@ const DIFFICULTY_LABEL = {
     easy: "쉬움",
     hard: "어려움",
 };
-const TUTORIAL_STORAGE_KEY = "tango:tutorial-seen:v1";
+const TUTORIAL_STORAGE_KEY = "tango:tutorial-seen:v2";
 const VALUE_TO_CLASS = {
     A: "filled",
     B: "hollow",
