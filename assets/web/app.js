@@ -14,7 +14,9 @@ const DIFFICULTY_LABEL = {
     hard: "어려움",
 };
 const TUTORIAL_STORAGE_KEY = "tango:tutorial-seen:v3";
-const CLOUD_PROGRESS_VERSION = 1;
+const TOTAL_PLAY_SECONDS_KEY = "tango:total-play-seconds";
+const CLOUD_PROGRESS_VERSION = 2;
+const NICKNAME_TAKEN_MESSAGE = "Nickname is already taken.";
 const VALUE_TO_CLASS = {
     A: "filled",
     B: "hollow",
@@ -68,7 +70,12 @@ const linkCodeInput = requireElement("#linkCodeInput");
 const linkAccountButton = requireElement("#linkAccountButton");
 const guestPlayButton = requireElement("#guestPlayButton");
 const accountStatus = requireElement("#accountStatus");
+const accountAlertModal = requireElement("#accountAlertModal");
+const accountAlertCloseButton = requireElement("#accountAlertCloseButton");
+const accountAlertTitle = requireElement("#accountAlertTitle");
+const accountAlertMessage = requireElement("#accountAlertMessage");
 const menuButton = requireElement("#menuButton");
+const profileButton = requireElement("#profileButton");
 const tutorialButton = requireElement("#tutorialButton");
 const tutorialModal = requireElement("#tutorialModal");
 const tutorialCloseButton = requireElement("#tutorialCloseButton");
@@ -78,6 +85,13 @@ const tutorialStartButton = requireElement("#tutorialStartButton");
 const menuScreen = requireElement("#menuScreen");
 const choiceGrid = requireElement("#choiceGrid");
 const menuStatus = requireElement("#menuStatus");
+const profileScreen = requireElement("#profileScreen");
+const profileName = requireElement("#profileName");
+const profileMode = requireElement("#profileMode");
+const profileTotalTime = requireElement("#profileTotalTime");
+const profileClearedStages = requireElement("#profileClearedStages");
+const profileStatus = requireElement("#profileStatus");
+const profilePlayButton = requireElement("#profilePlayButton");
 const stageScreen = requireElement("#stageScreen");
 const selectedPackTitle = requireElement("#selectedPackTitle");
 const selectedPackMeta = requireElement("#selectedPackMeta");
@@ -107,6 +121,7 @@ const completionStageListButton = requireElement("#completionStageListButton");
 const completionNextStageButton = requireElement("#completionNextStageButton");
 let tutorialPreviouslyFocused = null;
 let tutorialPageIndex = 0;
+let accountAlertPreviouslyFocused = null;
 let completionPreviouslyFocused = null;
 let completionEffectCleanupId = null;
 const CONFETTI_COLORS = ["#0f8f65", "#0f7c55", "#f0ca2e", "#c2475a", "#1d6fd8", "#151a17"];
@@ -128,8 +143,14 @@ guestPlayButton.addEventListener("click", () => {
 menuButton.addEventListener("click", () => {
     showMenuScreen();
 });
+profileButton.addEventListener("click", () => {
+    showProfileScreen();
+});
 tutorialButton.addEventListener("click", () => {
     showTutorial();
+});
+profilePlayButton.addEventListener("click", () => {
+    showMenuScreen();
 });
 tutorialCloseButton.addEventListener("click", () => {
     hideTutorial();
@@ -149,8 +170,22 @@ tutorialModal.addEventListener("click", (event) => {
         hideTutorial();
     }
 });
+accountAlertCloseButton.addEventListener("click", () => {
+    hideAccountAlert();
+});
+accountAlertModal.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof Element && target.hasAttribute("data-account-alert-close")) {
+        hideAccountAlert();
+    }
+});
 document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") {
+        return;
+    }
+    if (!accountAlertModal.classList.contains("is-hidden")) {
+        event.preventDefault();
+        hideAccountAlert();
         return;
     }
     if (!tutorialModal.classList.contains("is-hidden")) {
@@ -316,6 +351,26 @@ function hideTutorial() {
     tutorialPreviouslyFocused?.focus();
     tutorialPreviouslyFocused = null;
 }
+function showAccountAlert() {
+    accountAlertPreviouslyFocused =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    accountAlertTitle.textContent = NICKNAME_TAKEN_MESSAGE;
+    accountAlertMessage.textContent = "Please choose another nickname.";
+    accountAlertModal.classList.remove("is-hidden");
+    accountAlertModal.setAttribute("aria-hidden", "false");
+    syncModalOpenState();
+    accountAlertCloseButton.focus();
+}
+function hideAccountAlert() {
+    if (accountAlertModal.classList.contains("is-hidden")) {
+        return;
+    }
+    accountAlertModal.classList.add("is-hidden");
+    accountAlertModal.setAttribute("aria-hidden", "true");
+    syncModalOpenState();
+    accountAlertPreviouslyFocused?.focus();
+    accountAlertPreviouslyFocused = null;
+}
 function showCompletionDialog(puzzle, elapsed) {
     completionPreviouslyFocused =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -406,7 +461,8 @@ function clearCompletionEffects() {
     completionModal.classList.remove("is-celebrating");
 }
 function syncModalOpenState() {
-    const hasOpenModal = !tutorialModal.classList.contains("is-hidden") ||
+    const hasOpenModal = !accountAlertModal.classList.contains("is-hidden") ||
+        !tutorialModal.classList.contains("is-hidden") ||
         !completionModal.classList.contains("is-hidden");
     document.body.classList.toggle("modal-open", hasOpenModal);
 }
@@ -488,6 +544,7 @@ async function loadGameMenu() {
     menuStatus.textContent = "게임 목록을 불러오는 중입니다.";
     state.menu = await loadStageMenu();
     renderMenuChoices();
+    renderProfileStats();
     menuStatus.textContent = hasAnyPlayablePack()
         ? "원하는 카드를 누르면 Stage 목록으로 이동합니다."
         : "사용 가능한 DB 문제가 없습니다.";
@@ -510,7 +567,11 @@ async function handleCreateAccount() {
         await loadGameMenu();
     }
     catch (error) {
-        accountStatus.textContent = getErrorMessage(error, "닉네임 계정을 만들지 못했습니다.");
+        const message = getErrorMessage(error, "닉네임 계정을 만들지 못했습니다.");
+        accountStatus.textContent = message;
+        if (isNicknameTakenMessage(message)) {
+            showAccountAlert();
+        }
     }
     finally {
         setAccountBusy(false);
@@ -602,6 +663,7 @@ async function loadAccountProgress() {
     state.progress = merged.progress;
     state.progressLoaded = true;
     writeProgressToLocalStorage(state.progress);
+    renderProfileStats();
     if (merged.shouldSave) {
         await saveProgress(state.progress);
     }
@@ -618,6 +680,7 @@ function renderAccountState() {
         linkCodeText.textContent = "";
     }
     updateControls();
+    renderProfileStats();
 }
 function setAccountBusy(busy) {
     createNicknameInput.disabled = busy;
@@ -635,11 +698,13 @@ function createEmptyProgress() {
     return {
         version: CLOUD_PROGRESS_VERSION,
         stages: {},
+        totalPlaySeconds: 0,
         updatedAt: new Date(0).toISOString(),
     };
 }
 function readLocalProgress() {
     const progress = createEmptyProgress();
+    progress.totalPlaySeconds = readLocalTotalPlaySeconds();
     for (const option of PACK_OPTIONS) {
         const stage = readLocalUnlockedStage(option.size, option.difficulty);
         if (stage > 1) {
@@ -654,6 +719,7 @@ function normalizeCloudProgress(input) {
     }
     const progress = createEmptyProgress();
     const rawStages = isRecord(input.stages) ? input.stages : {};
+    progress.totalPlaySeconds = normalizeSecondsValue(input.totalPlaySeconds);
     progress.updatedAt = typeof input.updatedAt === "string" ? input.updatedAt : progress.updatedAt;
     for (const option of PACK_OPTIONS) {
         const key = progressStageId(option.size, option.difficulty);
@@ -678,6 +744,11 @@ function mergeProgress(remoteProgress, localProgress) {
         if (mergedStage !== remoteStage) {
             shouldSave = true;
         }
+    }
+    const mergedTotalPlaySeconds = Math.max(remoteProgress.totalPlaySeconds, localProgress.totalPlaySeconds);
+    progress.totalPlaySeconds = mergedTotalPlaySeconds;
+    if (mergedTotalPlaySeconds !== remoteProgress.totalPlaySeconds) {
+        shouldSave = true;
     }
     progress.updatedAt = shouldSave ? new Date().toISOString() : remoteProgress.updatedAt;
     return { progress, shouldSave };
@@ -735,9 +806,18 @@ function writeProgressToLocalStorage(progress) {
             const stage = progress.stages[progressStageId(option.size, option.difficulty)] ?? 1;
             window.localStorage.setItem(stageProgressKey(option.size, option.difficulty), String(stage));
         }
+        window.localStorage.setItem(TOTAL_PLAY_SECONDS_KEY, String(progress.totalPlaySeconds));
     }
     catch {
         // localStorage can be unavailable in strict privacy modes.
+    }
+}
+function readLocalTotalPlaySeconds() {
+    try {
+        return normalizeSecondsValue(window.localStorage.getItem(TOTAL_PLAY_SECONDS_KEY));
+    }
+    catch {
+        return 0;
     }
 }
 function readLocalUnlockedStage(size, difficulty) {
@@ -752,6 +832,10 @@ function normalizeStageValue(value) {
     const stage = typeof value === "number" ? value : Number(value);
     return Number.isFinite(stage) && stage > 1 ? Math.trunc(stage) : 1;
 }
+function normalizeSecondsValue(value) {
+    const seconds = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(seconds) && seconds > 0 ? Math.trunc(seconds) : 0;
+}
 function progressStageId(size, difficulty) {
     return `${size}:${difficulty}`;
 }
@@ -760,6 +844,9 @@ function isRecord(value) {
 }
 function getErrorMessage(error, fallback) {
     return error instanceof Error ? error.message : fallback;
+}
+function isNicknameTakenMessage(message) {
+    return message.includes(NICKNAME_TAKEN_MESSAGE);
 }
 async function selectPack(size, difficulty) {
     if (!canPlay()) {
@@ -848,8 +935,7 @@ function clearBoard() {
     state.violationKeys = new Set();
     resetWrongCellTracking();
     state.solved = false;
-    state.elapsedSeconds = 0;
-    startTimer();
+    resumeTimer();
     updateValidationStatus();
     renderBoard();
     renderStageGrid();
@@ -909,6 +995,15 @@ function showMenuScreen() {
         ? "원하는 카드를 누르면 Stage 목록으로 이동합니다."
         : "사용 가능한 DB 문제가 없습니다.";
 }
+function showProfileScreen() {
+    if (!canPlay()) {
+        setView("account");
+        return;
+    }
+    clearCurrentPuzzle();
+    setView("profile");
+    renderProfileStats();
+}
 function showStageScreen() {
     if (!canPlay()) {
         setView("account");
@@ -947,10 +1042,20 @@ function setView(view) {
     state.view = view;
     accountScreen.classList.toggle("is-hidden", view !== "account");
     menuScreen.classList.toggle("is-hidden", view !== "menu");
+    profileScreen.classList.toggle("is-hidden", view !== "profile");
     stageScreen.classList.toggle("is-hidden", view !== "stages");
     gameScreen.classList.toggle("is-hidden", view !== "puzzle");
     menuButton.classList.toggle("is-active", view === "menu");
+    profileButton.classList.toggle("is-active", view === "profile");
     updateControls();
+}
+function renderProfileStats() {
+    const nickname = state.account?.account_nickname ?? (state.guestMode ? "게스트" : "프로필");
+    profileName.textContent = nickname;
+    profileMode.textContent = state.account ? "닉네임 계정" : state.guestMode ? "게스트 모드" : "";
+    profileTotalTime.textContent = formatElapsedTime(state.progress.totalPlaySeconds);
+    profileClearedStages.textContent = `${getTotalClearedStageCount()}개`;
+    profileStatus.textContent = state.progressLoaded ? "" : "진행도 정보를 불러오는 중입니다.";
 }
 function renderMenuChoices() {
     choiceGrid.innerHTML = "";
@@ -1294,6 +1399,8 @@ function unlockNextStage(stage) {
 }
 function updateControls() {
     menuButton.disabled = state.loading || !canPlay();
+    profileButton.disabled = state.loading || !canPlay();
+    profilePlayButton.disabled = state.loading || !canPlay();
     createLinkCodeButton.disabled = state.loading || !state.account;
     backToMenuButton.disabled = state.loading;
     backToStagesButton.disabled = state.loading || state.stages.length === 0;
@@ -1329,16 +1436,30 @@ async function getHintSolution() {
     return state.hintSolution;
 }
 function startTimer() {
+    state.elapsedSeconds = 0;
     clearTimerInterval();
     state.timerStartedAtMs = Date.now();
     updateTimerText();
     state.timerIntervalId = window.setInterval(updateElapsedTime, 1000);
 }
+function resumeTimer() {
+    if (state.timerStartedAtMs === null) {
+        state.timerStartedAtMs = Date.now() - state.elapsedSeconds * 1000;
+    }
+    if (state.timerIntervalId === null) {
+        state.timerIntervalId = window.setInterval(updateElapsedTime, 1000);
+    }
+    updateElapsedTime();
+}
 function stopTimer() {
+    const wasRunning = state.timerStartedAtMs !== null;
     updateElapsedTime();
     state.timerStartedAtMs = null;
     clearTimerInterval();
     updateTimerText();
+    if (wasRunning) {
+        scheduleProgressSave();
+    }
 }
 function clearTimerInterval() {
     if (state.timerIntervalId !== null) {
@@ -1348,7 +1469,12 @@ function clearTimerInterval() {
 }
 function updateElapsedTime() {
     if (state.timerStartedAtMs !== null) {
-        state.elapsedSeconds = Math.floor((Date.now() - state.timerStartedAtMs) / 1000);
+        const nextElapsedSeconds = Math.max(0, Math.floor((Date.now() - state.timerStartedAtMs) / 1000));
+        const elapsedDelta = nextElapsedSeconds - state.elapsedSeconds;
+        state.elapsedSeconds = nextElapsedSeconds;
+        if (elapsedDelta > 0) {
+            addTotalPlaySeconds(elapsedDelta);
+        }
     }
     updateTimerText();
 }
@@ -1360,6 +1486,28 @@ function setLoading(loading) {
     renderMenuChoices();
     renderStageGrid();
     updateControls();
+}
+function addTotalPlaySeconds(deltaSeconds) {
+    const normalizedDelta = normalizeSecondsValue(deltaSeconds);
+    if (normalizedDelta <= 0 || !state.progressLoaded) {
+        return;
+    }
+    state.progress.totalPlaySeconds += normalizedDelta;
+    state.progress.updatedAt = new Date().toISOString();
+    writeProgressToLocalStorage(state.progress);
+    renderProfileStats();
+}
+function getTotalClearedStageCount() {
+    let clearedStages = 0;
+    for (const option of PACK_OPTIONS) {
+        const stageCount = getPackCount(option.size, option.difficulty);
+        if (stageCount <= 0) {
+            continue;
+        }
+        const unlockedStage = getStoredUnlockedStage(option.size, option.difficulty, stageCount);
+        clearedStages += Math.min(Math.max(unlockedStage - 1, 0), stageCount);
+    }
+    return clearedStages;
 }
 function getUnlockedStage() {
     return getStoredUnlockedStage(state.selectedSize, state.selectedDifficulty, state.stages.length);

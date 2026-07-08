@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tango</title>
-    <link rel="stylesheet" href="./assets/web/styles.css?v=20260706-completion" />
+    <link rel="stylesheet" href="./assets/web/styles.css?v=20260708-profile" />
   </head>
   <body>
     <main class="app-shell">
@@ -23,6 +23,7 @@
         </div>
         <div class="topbar-actions">
           <button class="menu-tab tutorial-tab" id="tutorialButton" type="button">규칙</button>
+          <button class="menu-tab" id="profileButton" type="button">프로필</button>
           <button class="menu-tab is-active" id="menuButton" type="button">게임 선택</button>
         </div>
       </header>
@@ -93,8 +94,8 @@
         </div>
 
         <div class="guest-panel">
-          <button class="secondary-button guest-button" id="guestPlayButton" type="button">
-            오프라인/게스트 플레이로 건너뛰기
+          <button class="primary-button guest-button" id="guestPlayButton" type="button">
+            게스트로 진행
           </button>
           <p>
             게스트 모드는 이 브라우저의 localStorage에만 진행도를 저장합니다. 다른 기기와 동기화하려면 닉네임 계정을 만들거나 기존 계정에 연결하세요.
@@ -102,6 +103,54 @@
         </div>
 
         <p class="status account-status" id="accountStatus" aria-live="polite"></p>
+      </section>
+
+      <section class="screen profile-screen is-hidden" id="profileScreen" aria-label="프로필">
+        <div class="screen-head">
+          <div>
+            <span class="step-label">프로필</span>
+            <h2 id="profileName">프로필</h2>
+            <p class="screen-meta" id="profileMode"></p>
+          </div>
+          <button class="secondary-button compact-button" id="profilePlayButton" type="button">
+            게임 선택
+          </button>
+        </div>
+
+        <div class="profile-summary" aria-label="플레이 요약">
+          <article class="profile-stat profile-stat-primary">
+            <span class="profile-stat-label">총 게임 시간</span>
+            <strong class="profile-stat-value" id="profileTotalTime">0:00</strong>
+          </article>
+          <article class="profile-stat">
+            <span class="profile-stat-label">완료한 Stage</span>
+            <strong class="profile-stat-value" id="profileClearedStages">0개</strong>
+          </article>
+        </div>
+
+        <p class="status" id="profileStatus" aria-live="polite"></p>
+      </section>
+
+      <section
+        class="account-alert-modal is-hidden"
+        id="accountAlertModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="accountAlertTitle"
+        aria-describedby="accountAlertMessage"
+        aria-hidden="true"
+      >
+        <div class="account-alert-backdrop" data-account-alert-close></div>
+        <div class="account-alert-panel">
+          <p class="account-alert-kicker">Nickname</p>
+          <h2 id="accountAlertTitle">Nickname is already taken.</h2>
+          <p class="account-alert-message" id="accountAlertMessage">
+            Please choose another nickname.
+          </p>
+          <button class="primary-button" id="accountAlertCloseButton" type="button">
+            OK
+          </button>
+        </div>
       </section>
 
       <section class="screen menu-screen is-hidden" id="menuScreen" aria-label="메뉴">
@@ -331,6 +380,6 @@
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="./assets/web/app.js?v=20260706-completion"></script>
+    <script type="module" src="./assets/web/app.js?v=20260708-profile"></script>
   </body>
 </html>

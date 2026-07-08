@@ -206,11 +206,11 @@ h2 {
 
 .guest-panel {
   display: grid;
-  gap: 8px;
-  border: 1px dashed color-mix(in srgb, var(--muted) 36%, white);
+  gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, white);
   border-radius: 8px;
   padding: 14px;
-  background: var(--surface-strong);
+  background: var(--accent-soft);
 }
 
 .guest-panel p {
@@ -222,7 +222,29 @@ h2 {
 }
 
 .guest-button {
+  display: inline-flex;
+  width: min(100%, 220px);
+  align-items: center;
+  justify-content: center;
   justify-self: start;
+  background: var(--accent);
+  color: var(--button-text);
+  box-shadow: 0 12px 24px rgb(15 143 101 / 0.22);
+  transition:
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.guest-button:not(:disabled):hover {
+  box-shadow: 0 16px 30px rgb(15 143 101 / 0.3);
+  transform: translateY(-1px);
+}
+
+.guest-button:disabled {
+  background: var(--disabled);
+  color: var(--disabled-text);
+  box-shadow: none;
+  transform: none;
 }
 
 .field-label {
@@ -253,6 +275,69 @@ h2 {
   border-radius: 8px;
   padding: 10px 12px;
   background: var(--surface);
+}
+
+.account-alert-modal {
+  position: fixed;
+  z-index: 25;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.account-alert-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(24 32 28 / 0.52);
+}
+
+.account-alert-panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100%, 430px);
+  gap: 12px;
+  border: 1px solid color-mix(in srgb, var(--error) 26%, var(--line));
+  border-radius: 8px;
+  padding: 26px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgb(24 32 28 / 0.24);
+  text-align: center;
+  animation: completion-pop 300ms cubic-bezier(0.18, 0.9, 0.22, 1.18);
+}
+
+.account-alert-kicker,
+.account-alert-message {
+  margin: 0;
+}
+
+.account-alert-kicker {
+  justify-self: center;
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: color-mix(in srgb, var(--error) 10%, white);
+  color: var(--error);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.account-alert-panel h2 {
+  color: var(--error);
+  font-size: 30px;
+  line-height: 1.08;
+}
+
+.account-alert-message {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.account-alert-panel .primary-button {
+  min-height: 46px;
 }
 
 .menu-hero {
@@ -380,6 +465,53 @@ h2 {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 16px;
+}
+
+.profile-screen {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
+  gap: 12px;
+}
+
+.profile-stat {
+  display: grid;
+  min-height: 140px;
+  align-content: space-between;
+  gap: 18px;
+  border: 1px solid rgb(24 32 28 / 0.12);
+  border-radius: 8px;
+  padding: 18px;
+  background: var(--surface);
+  box-shadow: 0 10px 26px rgb(24 32 28 / 0.08);
+}
+
+.profile-stat-primary {
+  background:
+    linear-gradient(145deg, var(--accent-soft) 0%, #ffffff 48%, #ffffff 100%);
+}
+
+.profile-stat-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.profile-stat-value {
+  color: var(--text);
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.profile-stat-primary .profile-stat-value {
+  color: var(--accent);
+  font-size: 48px;
 }
 
 .choice-grid {
@@ -1002,6 +1134,7 @@ body.modal-open {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .account-alert-panel,
   .completion-modal.is-celebrating .completion-panel,
   .confetti-piece {
     animation: none;
@@ -1293,6 +1426,19 @@ body.modal-open {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .profile-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-stat {
+    min-height: 116px;
+    padding: 16px;
+  }
+
+  .profile-stat-primary .profile-stat-value {
+    font-size: 36px;
+  }
+
   .game-head,
   .screen-head {
     align-items: stretch;
@@ -1308,8 +1454,16 @@ body.modal-open {
     padding: 10px;
   }
 
+  .account-alert-modal {
+    padding: 10px;
+  }
+
   .completion-modal {
     padding: 10px;
+  }
+
+  .account-alert-panel {
+    padding: 22px 18px;
   }
 
   .completion-panel {
