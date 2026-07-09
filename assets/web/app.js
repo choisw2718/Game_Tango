@@ -2,7 +2,7 @@ import { cloneBoard, normalizeConstraint, } from "../core/rules.js";
 import { validateBoard } from "../core/validateBoard.js";
 import { getNextHint } from "../game/hintEngine.js";
 import { clampStage, createDraftBoard, formatElapsedTime, loadStageList, loadStageMenu, loadStagePuzzle, nextUnlockedStage, stageProgressKey, } from "./puzzleData.js";
-import { createAccount, createLinkCode, ensureAnonymousSession, getMyAccount, getProgress, redeemLinkCode, saveProgress, } from "./supabaseClient.js";
+import { createAccount, createLinkCode, ensureAnonymousSession, getMyAccount, getProgress, redeemLinkCode, recordStageSolve, saveProgress, } from "./supabaseClient.js";
 const PACK_OPTIONS = [
     { size: 6, difficulty: "easy", label: "6x6 쉬움" },
     { size: 6, difficulty: "hard", label: "6x6 어려움" },
@@ -115,6 +115,7 @@ const conditionLayer = requireElement("#conditionLayer");
 const completionModal = requireElement("#completionModal");
 const completionConfetti = requireElement("#completionConfetti");
 const completionElapsedText = requireElement("#completionElapsedText");
+const completionRankText = requireElement("#completionRankText");
 const completionStageText = requireElement("#completionStageText");
 const completionCloseButton = requireElement("#completionCloseButton");
 const completionStageListButton = requireElement("#completionStageListButton");
@@ -124,6 +125,7 @@ let tutorialPageIndex = 0;
 let accountAlertPreviouslyFocused = null;
 let completionPreviouslyFocused = null;
 let completionEffectCleanupId = null;
+let completionRankingRequestId = 0;
 const CONFETTI_COLORS = ["#0f8f65", "#0f7c55", "#f0ca2e", "#c2475a", "#1d6fd8", "#151a17"];
 const CONFETTI_COUNT = 64;
 createAccountForm.addEventListener("submit", (event) => {
@@ -371,10 +373,15 @@ function hideAccountAlert() {
     accountAlertPreviouslyFocused?.focus();
     accountAlertPreviouslyFocused = null;
 }
-function showCompletionDialog(puzzle, elapsed) {
+function showCompletionDialog(puzzle, elapsed, elapsedSeconds) {
     completionPreviouslyFocused =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    completionRankingRequestId += 1;
+    const rankingRequestId = completionRankingRequestId;
     completionElapsedText.textContent = `풀이 시간 ${elapsed}`;
+    completionRankText.textContent = state.account
+        ? "순위 계산 중..."
+        : "닉네임 계정으로 플레이하면 전체 순위를 기록할 수 있습니다.";
     const canGoNext = puzzle.stage < state.unlockedStage && puzzle.stage < state.stages.length;
     completionStageText.textContent =
         puzzle.stage >= puzzle.totalStages
@@ -391,6 +398,39 @@ function showCompletionDialog(puzzle, elapsed) {
             (canGoNext ? completionNextStageButton : completionStageListButton).focus();
         }
     });
+    if (state.account) {
+        void updateCompletionRanking(puzzle, elapsedSeconds, rankingRequestId);
+    }
+}
+async function updateCompletionRanking(puzzle, elapsedSeconds, requestId) {
+    try {
+        const ranking = await recordStageSolve({
+            puzzleId: puzzle.id,
+            size: puzzle.size,
+            difficulty: puzzle.gameDifficultyKey,
+            stage: puzzle.stage,
+            elapsedSeconds: Math.max(1, Math.trunc(elapsedSeconds)),
+        });
+        if (requestId !== completionRankingRequestId) {
+            return;
+        }
+        completionRankText.textContent = formatSolveRanking(ranking);
+    }
+    catch (error) {
+        console.error("Failed to record solve ranking", error);
+        if (requestId === completionRankingRequestId) {
+            completionRankText.textContent = "순위를 불러오지 못했습니다.";
+        }
+    }
+}
+function formatSolveRanking(ranking) {
+    const rank = normalizePositiveInteger(ranking.solve_rank, 1);
+    const total = normalizePositiveInteger(ranking.solver_count, rank);
+    const bestSeconds = normalizeSecondsValue(ranking.best_seconds);
+    if (ranking.improved) {
+        return `이 문제를 푼 ${total}명 중 ${rank}번째로 빠릅니다.`;
+    }
+    return `내 최고 기록 ${formatElapsedTime(bestSeconds)} 기준, ${total}명 중 ${rank}번째입니다.`;
 }
 function hideCompletionDialog(restoreFocus = true) {
     if (completionModal.classList.contains("is-hidden")) {
@@ -836,6 +876,10 @@ function normalizeSecondsValue(value) {
     const seconds = typeof value === "number" ? value : Number(value);
     return Number.isFinite(seconds) && seconds > 0 ? Math.trunc(seconds) : 0;
 }
+function normalizePositiveInteger(value, fallback) {
+    const numberValue = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(numberValue) && numberValue > 0 ? Math.trunc(numberValue) : fallback;
+}
 function progressStageId(size, difficulty) {
     return `${size}:${difficulty}`;
 }
@@ -1279,7 +1323,8 @@ function updateValidationStatus(options = {}) {
             stopTimer();
             state.solved = true;
         }
-        const elapsed = formatElapsedTime(state.elapsedSeconds);
+        const elapsedSeconds = state.elapsedSeconds;
+        const elapsed = formatElapsedTime(elapsedSeconds);
         unlockNextStage(puzzle.stage);
         statusText.textContent =
             puzzle.stage >= puzzle.totalStages
@@ -1288,7 +1333,7 @@ function updateValidationStatus(options = {}) {
         updateControls();
         renderStageGrid();
         if (newlySolved) {
-            showCompletionDialog(puzzle, elapsed);
+            showCompletionDialog(puzzle, elapsed, elapsedSeconds);
         }
         return;
     }

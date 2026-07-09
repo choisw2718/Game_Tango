@@ -1056,6 +1056,7 @@ body.modal-open {
 
 .completion-kicker,
 .completion-time,
+.completion-rank,
 .completion-description {
   margin: 0;
 }
@@ -1082,6 +1083,13 @@ body.modal-open {
   font-size: 22px;
   font-weight: 900;
   line-height: 1.2;
+}
+
+.completion-rank {
+  color: var(--success);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.35;
 }
 
 .completion-description {

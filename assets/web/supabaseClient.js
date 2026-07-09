@@ -73,6 +73,21 @@ export async function saveProgress(progressJson) {
     });
     assertNoSupabaseError(result.error);
 }
+export async function recordStageSolve(input) {
+    const result = await getSupabaseClient().rpc("record_stage_solve", {
+        p_puzzle_id: input.puzzleId,
+        p_puzzle_size: input.size,
+        p_game_difficulty: input.difficulty,
+        p_puzzle_stage: input.stage,
+        p_elapsed_seconds: input.elapsedSeconds,
+    });
+    assertNoSupabaseError(result.error);
+    const ranking = firstRow(result.data);
+    if (!ranking) {
+        throw new Error("풀이 순위를 저장하지 못했습니다.");
+    }
+    return ranking;
+}
 function firstRow(data) {
     return Array.isArray(data) && data.length > 0 ? data[0] ?? null : null;
 }
