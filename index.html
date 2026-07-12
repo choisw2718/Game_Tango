@@ -8,7 +8,7 @@
       name="description"
       content="Tango is a browser-based logic puzzle game with original stage data, clear rules, local progress saving, and optional nickname sync."
     />
-    <link rel="stylesheet" href="./assets/web/styles.css?v=20260710-adsense" />
+    <link rel="stylesheet" href="./assets/web/styles.css?v=20260710-undo" />
   </head>
   <body>
     <main class="app-shell">
@@ -209,15 +209,34 @@
             <span class="step-label">플레이</span>
             <p class="puzzle-meta" id="puzzleMeta"></p>
           </div>
-          <p class="timer-text" id="timerText">풀이 시간 0:00</p>
+          <div class="game-head-actions">
+            <p class="timer-text" id="timerText">풀이 시간 0:00</p>
+            <section class="game-actions" aria-label="Game controls">
+              <button class="secondary-button compact-button" id="backToStagesButton" type="button">
+                Stage 목록
+              </button>
+              <button class="primary-button compact-button next-button" id="nextStageButton" type="button" disabled>
+                다음 Stage
+              </button>
+            </section>
+          </div>
         </div>
 
-        <section class="game-actions" aria-label="Game controls">
-          <button class="secondary-button" id="backToStagesButton" type="button">
-            Stage 목록
+        <section class="tool-panel" aria-label="Puzzle tools">
+          <button class="secondary-button" id="undoButton" type="button" disabled>
+            실행취소
           </button>
-          <button class="primary-button next-button" id="nextStageButton" type="button" disabled>
-            다음 Stage
+          <button class="tool-button" id="hintButton" type="button" disabled>
+            힌트
+          </button>
+          <button class="secondary-button" id="checkpointSaveButton" type="button" disabled>
+            체크포인트 저장
+          </button>
+          <button class="secondary-button" id="checkpointRestoreButton" type="button" disabled>
+            체크포인트 복원
+          </button>
+          <button class="secondary-button danger-button" id="resetButton" type="button" disabled>
+            보드 비우기
           </button>
         </section>
 
@@ -232,21 +251,6 @@
           <p class="status status-panel" id="statusText" aria-live="polite"></p>
           <p class="hint-text" id="hintText" aria-live="polite"></p>
         </div>
-
-        <section class="tool-panel" aria-label="Puzzle tools">
-          <button class="tool-button" id="hintButton" type="button" disabled>
-            힌트
-          </button>
-          <button class="secondary-button" id="resetButton" type="button" disabled>
-            보드 비우기
-          </button>
-          <button class="secondary-button" id="checkpointSaveButton" type="button" disabled>
-            체크포인트 저장
-          </button>
-          <button class="secondary-button" id="checkpointRestoreButton" type="button" disabled>
-            체크포인트 복원
-          </button>
-        </section>
       </section>
 
       <section class="site-info" aria-label="Tango 사이트 정보">
@@ -460,6 +464,6 @@
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="./assets/web/app.js?v=20260710-adsense"></script>
+    <script type="module" src="./assets/web/app.js?v=20260710-undo"></script>
   </body>
 </html>

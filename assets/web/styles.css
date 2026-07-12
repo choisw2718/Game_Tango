@@ -904,24 +904,32 @@ h2 {
 
 .game-head {
   display: flex;
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.game-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .game-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 12px;
+  grid-template-columns: repeat(2, max-content);
+  gap: 8px;
+  margin: 0;
 }
 
 .tool-panel {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 1.1fr 1fr 1.3fr 1.3fr 1.1fr;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 12px;
   margin-bottom: 12px;
 }
 
@@ -950,6 +958,11 @@ h2 {
 .tool-button {
   background: var(--surface-strong);
   color: var(--text);
+}
+
+.danger-button {
+  background: color-mix(in srgb, var(--error) 10%, white);
+  color: var(--error);
 }
 
 .primary-button:not(:disabled),
@@ -1613,9 +1626,23 @@ body.modal-open {
     flex-direction: column;
   }
 
-  .game-actions,
+  .game-head-actions {
+    width: 100%;
+    align-items: stretch;
+    justify-content: space-between;
+  }
+
+  .game-actions {
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
   .tool-panel {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .danger-button {
+    grid-column: 1 / -1;
   }
 
   .tutorial-modal {

@@ -1,6 +1,7 @@
 import { cloneBoard, normalizeConstraint, } from "../core/rules.js";
 import { validateBoard } from "../core/validateBoard.js";
 import { getNextHint } from "../game/hintEngine.js";
+import { canUndo, createUndoHistory, popUndoSnapshot, recordUndoSnapshot, resetUndoHistory, } from "../game/undoHistory.js";
 import { clampStage, createDraftBoard, formatElapsedTime, loadStageList, loadStageMenu, loadStagePuzzle, nextUnlockedStage, stageProgressKey, } from "./puzzleData.js";
 import { createAccount, createLinkCode, ensureAnonymousSession, getMyAccount, getProgress, redeemLinkCode, recordStageSolve, saveProgress, } from "./supabaseClient.js";
 const PACK_OPTIONS = [
@@ -36,6 +37,7 @@ const state = {
     unlockedStage: 1,
     puzzle: null,
     board: [],
+    undoHistory: createUndoHistory(),
     checkpoint: null,
     hint: null,
     hintSolution: null,
@@ -101,6 +103,7 @@ const stageStatus = requireElement("#stageStatus");
 const gameScreen = requireElement("#gameScreen");
 const backToStagesButton = requireElement("#backToStagesButton");
 const nextStageButton = requireElement("#nextStageButton");
+const undoButton = requireElement("#undoButton");
 const resetButton = requireElement("#resetButton");
 const checkpointSaveButton = requireElement("#checkpointSaveButton");
 const checkpointRestoreButton = requireElement("#checkpointRestoreButton");
@@ -182,6 +185,14 @@ accountAlertModal.addEventListener("click", (event) => {
     }
 });
 document.addEventListener("keydown", (event) => {
+    if (isUndoShortcut(event) &&
+        !isEditableElement(document.activeElement) &&
+        !hasOpenModal()) {
+        if (undoLastMove()) {
+            event.preventDefault();
+        }
+        return;
+    }
     if (event.key !== "Escape") {
         return;
     }
@@ -270,6 +281,9 @@ nextStageButton.addEventListener("click", () => {
 resetButton.addEventListener("click", () => {
     clearBoard();
 });
+undoButton.addEventListener("click", () => {
+    undoLastMove();
+});
 checkpointSaveButton.addEventListener("click", () => {
     saveCheckpoint();
 });
@@ -300,6 +314,7 @@ boardGrid.addEventListener("click", (event) => {
     const focusKey = cellKey(row, col);
     const beforeResult = validateBoard(state.board, state.puzzle);
     confirmPendingWrongCellsExcept(focusKey);
+    recordUndoSnapshot(state.undoHistory, state.board);
     rowCells[col] = nextValue(rowCells[col] ?? null);
     clearHint();
     clearPendingValidation(focusKey);
@@ -320,6 +335,7 @@ boardGrid.addEventListener("click", (event) => {
     }
     renderBoard();
     renderStageGrid();
+    updateControls();
     if (hasCurrentCellValue(focusKey) &&
         hasNewViolationForCell(beforeResult.violations, result.violations, focusKey)) {
         registerPendingWrongCell(focusKey);
@@ -973,7 +989,11 @@ function clearBoard() {
     }
     hideCompletionDialog(false);
     clearPendingValidation();
-    state.board = createDraftBoard(state.puzzle);
+    const emptyBoard = createDraftBoard(state.puzzle);
+    if (!boardsEqual(state.board, emptyBoard)) {
+        recordUndoSnapshot(state.undoHistory, state.board);
+    }
+    state.board = emptyBoard;
     state.checkpoint = null;
     clearHint();
     state.violationKeys = new Set();
@@ -1001,6 +1021,9 @@ function restoreCheckpoint() {
     }
     hideCompletionDialog(false);
     clearPendingValidation();
+    if (!boardsEqual(state.board, state.checkpoint)) {
+        recordUndoSnapshot(state.undoHistory, state.board);
+    }
     state.board = cloneBoard(state.checkpoint);
     state.solved = false;
     resetWrongCellTracking();
@@ -1009,6 +1032,32 @@ function restoreCheckpoint() {
     renderBoard();
     renderStageGrid();
     statusText.textContent = "체크포인트로 되돌렸습니다.";
+}
+function undoLastMove() {
+    if (!state.puzzle || state.loading) {
+        return false;
+    }
+    const previousBoard = popUndoSnapshot(state.undoHistory);
+    if (!previousBoard) {
+        updateControls();
+        return false;
+    }
+    hideCompletionDialog(false);
+    clearPendingValidation();
+    state.board = cloneBoard(previousBoard);
+    clearHint();
+    state.violationKeys = new Set();
+    resetWrongCellTracking();
+    state.solved = false;
+    resumeTimer();
+    updateValidationStatus();
+    renderBoard();
+    renderStageGrid();
+    if (!state.solved) {
+        statusText.textContent = "실행취소했습니다.";
+        updateControls();
+    }
+    return true;
 }
 async function showHint() {
     if (!state.puzzle || state.loading || state.solved) {
@@ -1068,6 +1117,7 @@ function clearCurrentPuzzle() {
     stopTimer();
     state.puzzle = null;
     state.board = [];
+    resetUndoHistory(state.undoHistory);
     state.checkpoint = null;
     state.hint = null;
     state.hintSolution = null;
@@ -1462,6 +1512,7 @@ function updateControls() {
             !state.solved ||
             state.puzzle.stage >= state.unlockedStage ||
             state.puzzle.stage >= state.stages.length;
+    undoButton.disabled = state.loading || !state.puzzle || !canUndo(state.undoHistory);
     resetButton.disabled = state.loading || !state.puzzle;
 }
 function clearHint() {
@@ -1580,6 +1631,24 @@ function collectViolationKeys(violations) {
     }
     return keys;
 }
+function boardsEqual(left, right) {
+    if (left.length !== right.length) {
+        return false;
+    }
+    for (let row = 0; row < left.length; row += 1) {
+        const leftRow = left[row];
+        const rightRow = right[row];
+        if (!leftRow || !rightRow || leftRow.length !== rightRow.length) {
+            return false;
+        }
+        for (let col = 0; col < leftRow.length; col += 1) {
+            if (leftRow[col] !== rightRow[col]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
 function nextValue(value) {
     if (value === null) {
         return "A";
@@ -1595,6 +1664,23 @@ function cellKey(row, col) {
 function getCellLabel(row, col, value, isGiven) {
     const stateLabel = value ? VALUE_TO_LABEL[value] : "empty";
     return `Row ${row + 1}, column ${col + 1}, ${isGiven ? "fixed " : ""}${stateLabel}`;
+}
+function isUndoShortcut(event) {
+    return ((event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === "z");
+}
+function isEditableElement(element) {
+    return (element instanceof HTMLInputElement ||
+        element instanceof HTMLTextAreaElement ||
+        element instanceof HTMLSelectElement ||
+        (element instanceof HTMLElement && element.isContentEditable));
+}
+function hasOpenModal() {
+    return (!accountAlertModal.classList.contains("is-hidden") ||
+        !tutorialModal.classList.contains("is-hidden") ||
+        !completionModal.classList.contains("is-hidden"));
 }
 function requireElement(selector) {
     const element = document.querySelector(selector);
