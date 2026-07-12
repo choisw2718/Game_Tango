@@ -8,77 +8,121 @@
       name="description"
       content="Tango puzzle game privacy policy, including local storage, nickname sync, analytics-free operation, and Google advertising cookie disclosures."
     />
-    <link rel="stylesheet" href="./assets/web/styles.css?v=20260710-undo" />
+    <link rel="stylesheet" href="./assets/web/styles.css?v=20260712-policy" />
   </head>
-  <body>
+  <body class="policy-page">
     <main class="policy-shell">
       <header class="policy-header">
-        <p class="eyebrow">Tango Puzzle</p>
-        <h1>개인정보처리방침</h1>
-        <nav class="site-nav" aria-label="정책 페이지">
-          <a href="./index.html">게임</a>
-          <a href="./index.html#about">소개</a>
-          <a href="./terms.html">이용약관</a>
-          <a href="./contact.html">문의</a>
-        </nav>
+        <div class="policy-topbar">
+          <a class="policy-brand" href="./index.html" aria-label="Tango 게임으로 돌아가기">
+            <span class="policy-brand-mark" aria-hidden="true"></span>
+            Tango
+          </a>
+          <nav class="policy-nav" aria-label="정책 페이지">
+            <a aria-current="page" href="./privacy.html">개인정보</a>
+            <a href="./terms.html">이용약관</a>
+            <a href="./contact.html">문의</a>
+          </nav>
+        </div>
+        <div class="policy-heading">
+          <p class="eyebrow">Privacy</p>
+          <h1>개인정보처리방침</h1>
+          <p class="policy-lede">
+            Tango에서 어떤 정보가 저장되고, 광고 서비스가 어떤 기술을 사용할 수 있는지 안내합니다.
+          </p>
+        </div>
       </header>
 
-      <section class="policy-content" aria-label="개인정보처리방침 본문">
-        <article class="info-block">
-          <h2>수집하거나 저장하는 정보</h2>
-          <p>
-            게스트 모드에서는 진행도와 플레이 시간이 사용자의 브라우저 localStorage에만 저장됩니다.
-            닉네임 계정을 만들거나 연결하면 Supabase에 닉네임, 진행도, 스테이지 완료 기록, 기기 연결
-            코드와 같은 서비스 운영 정보가 저장될 수 있습니다.
-          </p>
-        </article>
+      <div class="policy-layout">
+        <aside class="policy-toc" aria-label="페이지 목차">
+          <p>이 페이지에서</p>
+          <a href="#summary">핵심 요약</a>
+          <a href="#stored-data">저장하는 정보</a>
+          <a href="#data-use">이용 목적</a>
+          <a href="#ads-cookies">광고 및 쿠키</a>
+          <a href="#external-services">외부 서비스</a>
+          <a href="#requests">문의와 삭제</a>
+        </aside>
 
-        <article class="info-block">
-          <h2>정보 사용 목적</h2>
-          <p>
-            저장된 정보는 퍼즐 진행도 복원, 여러 기기 간 동기화, 스테이지 기록 표시, 오류 대응을 위해
-            사용됩니다. Tango는 사용자가 입력한 닉네임을 결제 정보나 민감 정보로 사용하지 않습니다.
-          </p>
-        </article>
+        <section class="policy-content" aria-label="개인정보처리방침 본문">
+          <div class="policy-summary" id="summary">
+            <span class="policy-summary-label">핵심 요약</span>
+            <ul>
+              <li>게스트 진행도는 현재 브라우저에 저장됩니다.</li>
+              <li>닉네임 계정 정보는 진행도 동기화에만 사용됩니다.</li>
+              <li>광고가 게재되면 Google 등 제3자가 쿠키와 식별자를 사용할 수 있습니다.</li>
+            </ul>
+          </div>
 
-        <article class="info-block">
-          <h2>Google advertising cookies</h2>
-          <p>
-            Google을 포함한 제3자 광고 제공업체는 사용자의 이 사이트 또는 다른 사이트 방문 기록을
-            기반으로 광고를 게재하기 위해 쿠키를 사용할 수 있습니다. Google의 광고 쿠키 사용은
-            Google과 그 파트너가 이 사이트 또는 인터넷의 다른 사이트 방문을 기반으로 사용자에게
-            광고를 게재할 수 있게 합니다.
-          </p>
-          <p>
-            사용자는
-            <a class="text-link" href="https://www.google.com/settings/ads">Google 광고 설정</a>에서
-            개인 맞춤 광고를 관리하거나 사용 중지할 수 있습니다. 일부 제3자 광고 제공업체의 개인 맞춤
-            광고 쿠키 사용은
-            <a class="text-link" href="https://www.aboutads.info">aboutads.info</a>에서도 관리할 수
-            있습니다.
-          </p>
-        </article>
+          <article class="policy-section" id="stored-data">
+            <h2>수집하거나 저장하는 정보</h2>
+            <p>
+              게스트 모드에서는 진행도와 플레이 시간이 사용자의 브라우저 localStorage에만 저장됩니다.
+              닉네임 계정을 만들거나 연결하면 Supabase에 닉네임, 진행도, 스테이지 완료 기록, 기기 연결
+              코드와 같은 서비스 운영 정보가 저장될 수 있습니다.
+            </p>
+          </article>
 
-        <article class="info-block">
-          <h2>외부 서비스</h2>
-          <p>
-            Tango는 Supabase를 계정 및 진행도 동기화에 사용하고, Supabase JavaScript 라이브러리를
-            jsDelivr CDN에서 불러옵니다. 각 외부 서비스는 자체 보안 및 개인정보 정책에 따라 데이터를
-            처리할 수 있습니다.
-          </p>
-        </article>
+          <article class="policy-section" id="data-use">
+            <h2>정보 사용 목적</h2>
+            <p>
+              저장된 정보는 퍼즐 진행도 복원, 여러 기기 간 동기화, 스테이지 기록 표시, 오류 대응을 위해
+              사용됩니다. Tango는 사용자가 입력한 닉네임을 결제 정보나 민감 정보로 사용하지 않습니다.
+            </p>
+          </article>
 
-        <article class="info-block">
-          <h2>문의와 삭제 요청</h2>
-          <p>
-            개인정보 관련 요청, 닉네임 계정 삭제 요청, 오류 제보는 GitHub 이슈를 통해 문의할 수
-            있습니다. 공개 이슈에는 연결 코드, 개인 연락처, 기타 민감 정보를 포함하지 마세요.
-          </p>
-          <a class="text-link" href="https://github.com/choisw2718/Game_Tango/issues">GitHub 이슈 열기</a>
-        </article>
+          <article class="policy-section policy-section-featured" id="ads-cookies">
+            <p class="policy-section-kicker">Google AdSense</p>
+            <h2>광고 및 쿠키</h2>
+            <p>
+              이 사이트에 광고가 게재되는 경우 Google을 포함한 제3자 광고 제공업체는 사용자의 이 사이트
+              또는 다른 사이트 방문 기록을 기반으로 광고를 제공하기 위해 쿠키를 사용할 수 있습니다.
+              Google의 광고 쿠키 사용은 Google과 파트너가 사용자에게 개인 맞춤 광고를 제공할 수 있게
+              합니다.
+            </p>
+            <p>
+              광고 게재 과정에서 제3자가 사용자의 브라우저에 쿠키를 저장하거나 읽을 수 있으며, 웹 비콘,
+              IP 주소 또는 기타 식별자를 사용해 정보를 수집할 수 있습니다. Google이 파트너 사이트의
+              정보를 처리하는 방식은
+              <a class="text-link" href="https://policies.google.com/technologies/partner-sites?hl=ko"
+                >Google의 파트너 사이트 데이터 사용 안내</a
+              >에서 확인할 수 있습니다.
+            </p>
+            <div class="policy-link-row" aria-label="광고 개인정보 설정 링크">
+              <a class="policy-resource-link" href="https://adssettings.google.com/">
+                <span>Google 광고 설정</span>
+                <small>개인 맞춤 광고 관리</small>
+              </a>
+              <a class="policy-resource-link" href="https://www.aboutads.info/choices/">
+                <span>AboutAds 선택 페이지</span>
+                <small>제3자 맞춤 광고 선택 해제</small>
+              </a>
+            </div>
+          </article>
 
-        <p class="policy-updated">최종 업데이트: 2026-07-10</p>
-      </section>
+          <article class="policy-section" id="external-services">
+            <h2>외부 서비스</h2>
+            <p>
+              Tango는 Supabase를 계정 및 진행도 동기화에 사용하고, Supabase JavaScript 라이브러리를
+              jsDelivr CDN에서 불러옵니다. 각 외부 서비스는 자체 보안 및 개인정보 정책에 따라 데이터를
+              처리할 수 있습니다.
+            </p>
+          </article>
+
+          <article class="policy-section" id="requests">
+            <h2>문의와 삭제 요청</h2>
+            <p>
+              개인정보 관련 요청, 닉네임 계정 삭제 요청, 오류 제보는 GitHub 이슈를 통해 문의할 수
+              있습니다. 공개 이슈에는 연결 코드, 개인 연락처, 기타 민감 정보를 포함하지 마세요.
+            </p>
+            <a class="text-link" href="https://github.com/choisw2718/Game_Tango/issues"
+              >GitHub 이슈 열기</a
+            >
+          </article>
+
+          <p class="policy-updated">최종 업데이트: 2026-07-12</p>
+        </section>
+      </div>
     </main>
   </body>
 </html>
