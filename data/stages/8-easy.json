@@ -1002,6 +1002,206 @@
       "difficultyLabel": "쉬움",
       "difficultyLevel": 2,
       "difficultyScore": 31
+    },
+    {
+      "stage": 101,
+      "id": "tango-8-c4b75308a75a",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 28
+    },
+    {
+      "stage": 102,
+      "id": "tango-8-76b175bf221d",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 28
+    },
+    {
+      "stage": 103,
+      "id": "tango-8-c68032e8c48d",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 28
+    },
+    {
+      "stage": 104,
+      "id": "tango-8-78476b262bd1",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 28
+    },
+    {
+      "stage": 105,
+      "id": "tango-8-8891bddde1e8",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 28
+    },
+    {
+      "stage": 106,
+      "id": "tango-8-853573f7425b",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 28
+    },
+    {
+      "stage": 107,
+      "id": "tango-8-3c70f17776b9",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 28
+    },
+    {
+      "stage": 108,
+      "id": "tango-8-8edbf9092ded",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 29
+    },
+    {
+      "stage": 109,
+      "id": "tango-8-08d192a2057e",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 29
+    },
+    {
+      "stage": 110,
+      "id": "tango-8-0a025b9d7d61",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 29
+    },
+    {
+      "stage": 111,
+      "id": "tango-8-d2b0ed21fa5f",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 29
+    },
+    {
+      "stage": 112,
+      "id": "tango-8-c09538c185f1",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 29
+    },
+    {
+      "stage": 113,
+      "id": "tango-8-c8679ac2ecdd",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 29
+    },
+    {
+      "stage": 114,
+      "id": "tango-8-acaab4c95d71",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 29
+    },
+    {
+      "stage": 115,
+      "id": "tango-8-10f747563df1",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 29
+    },
+    {
+      "stage": 116,
+      "id": "tango-8-2d6a8021aba3",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 29
+    },
+    {
+      "stage": 117,
+      "id": "tango-8-e2b9e2cba659",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 29
+    },
+    {
+      "stage": 118,
+      "id": "tango-8-79ebd5776ba0",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 30
+    },
+    {
+      "stage": 119,
+      "id": "tango-8-4adbc25a66d2",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 30
+    },
+    {
+      "stage": 120,
+      "id": "tango-8-cb4e652aafb5",
+      "size": 8,
+      "gameDifficultyKey": "easy",
+      "gameDifficultyLabel": "쉬움",
+      "difficultyLabel": "쉬움",
+      "difficultyLevel": 2,
+      "difficultyScore": 31
     }
   ]
 }

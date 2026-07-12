@@ -1,0 +1,110 @@
+{
+  "ok": true,
+  "puzzle": {
+    "id": "tango-6-c88a20c0a49a",
+    "size": 6,
+    "mode": "standard",
+    "gameDifficulty": "어려움",
+    "difficultyLabel": "보통",
+    "difficultyLevel": 3,
+    "difficultyScore": 46,
+    "givens": [
+      {
+        "row": 2,
+        "col": 4,
+        "value": "B"
+      },
+      {
+        "row": 3,
+        "col": 4,
+        "value": "A"
+      }
+    ],
+    "constraints": [
+      {
+        "from": {
+          "row": 0,
+          "col": 2
+        },
+        "to": {
+          "row": 1,
+          "col": 2
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 2,
+          "col": 0
+        },
+        "to": {
+          "row": 2,
+          "col": 1
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 2,
+          "col": 0
+        },
+        "to": {
+          "row": 3,
+          "col": 0
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 3,
+          "col": 3
+        },
+        "to": {
+          "row": 3,
+          "col": 4
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 1
+        },
+        "to": {
+          "row": 5,
+          "col": 1
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 3
+        },
+        "to": {
+          "row": 4,
+          "col": 4
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 4,
+          "col": 4
+        },
+        "to": {
+          "row": 4,
+          "col": 5
+        },
+        "type": "x"
+      }
+    ],
+    "metadata": {
+      "generatorVersion": "0.1.0"
+    },
+    "stage": 105,
+    "totalStages": 120,
+    "gameDifficultyKey": "hard",
+    "gameDifficultyLabel": "어려움"
+  }
+}

@@ -502,6 +502,206 @@
       "difficultyLabel": "어려움",
       "difficultyLevel": 4,
       "difficultyScore": 72
+    },
+    {
+      "stage": 51,
+      "id": "tango-8-d9a9600cc38f",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "보통",
+      "difficultyLevel": 3,
+      "difficultyScore": 47
+    },
+    {
+      "stage": 52,
+      "id": "tango-8-3697e08ba6c5",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "보통",
+      "difficultyLevel": 3,
+      "difficultyScore": 47
+    },
+    {
+      "stage": 53,
+      "id": "tango-8-cc4733a1f063",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "보통",
+      "difficultyLevel": 3,
+      "difficultyScore": 48
+    },
+    {
+      "stage": 54,
+      "id": "tango-8-61112a029d74",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "보통",
+      "difficultyLevel": 3,
+      "difficultyScore": 49
+    },
+    {
+      "stage": 55,
+      "id": "tango-8-259474f104c5",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "보통",
+      "difficultyLevel": 3,
+      "difficultyScore": 49
+    },
+    {
+      "stage": 56,
+      "id": "tango-8-9b5750665e47",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "보통",
+      "difficultyLevel": 3,
+      "difficultyScore": 49
+    },
+    {
+      "stage": 57,
+      "id": "tango-8-8956b34c98f4",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "보통",
+      "difficultyLevel": 3,
+      "difficultyScore": 49
+    },
+    {
+      "stage": 58,
+      "id": "tango-8-dce30544df52",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "보통",
+      "difficultyLevel": 3,
+      "difficultyScore": 49
+    },
+    {
+      "stage": 59,
+      "id": "tango-8-6a8e5e87dee4",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "보통",
+      "difficultyLevel": 3,
+      "difficultyScore": 50
+    },
+    {
+      "stage": 60,
+      "id": "tango-8-6d3700e5c456",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 70
+    },
+    {
+      "stage": 61,
+      "id": "tango-8-5c2640e7ca17",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 70
+    },
+    {
+      "stage": 62,
+      "id": "tango-8-613aed62b8e9",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 71
+    },
+    {
+      "stage": 63,
+      "id": "tango-8-3ca542c5f372",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 71
+    },
+    {
+      "stage": 64,
+      "id": "tango-8-64c4eb45f461",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 71
+    },
+    {
+      "stage": 65,
+      "id": "tango-8-17749c914b3e",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 71
+    },
+    {
+      "stage": 66,
+      "id": "tango-8-1dd9815111aa",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 71
+    },
+    {
+      "stage": 67,
+      "id": "tango-8-265dc0337a38",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 71
+    },
+    {
+      "stage": 68,
+      "id": "tango-8-5a77f5e4c6ef",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 71
+    },
+    {
+      "stage": 69,
+      "id": "tango-8-f5eddf78e420",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 71
+    },
+    {
+      "stage": 70,
+      "id": "tango-8-ec90e62ab73f",
+      "size": 8,
+      "gameDifficultyKey": "hard",
+      "gameDifficultyLabel": "어려움",
+      "difficultyLabel": "어려움",
+      "difficultyLevel": 4,
+      "difficultyScore": 72
     }
   ]
 }

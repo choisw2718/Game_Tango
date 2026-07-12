@@ -7,12 +7,12 @@
         {
           "key": "easy",
           "label": "쉬움",
-          "count": 50
+          "count": 70
         },
         {
           "key": "hard",
           "label": "어려움",
-          "count": 100
+          "count": 120
         }
       ]
     },
@@ -22,12 +22,12 @@
         {
           "key": "easy",
           "label": "쉬움",
-          "count": 100
+          "count": 120
         },
         {
           "key": "hard",
           "label": "어려움",
-          "count": 50
+          "count": 70
         }
       ]
     }

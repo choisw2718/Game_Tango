@@ -1,0 +1,121 @@
+{
+  "ok": true,
+  "puzzle": {
+    "id": "tango-6-a3a685a69cbf",
+    "size": 6,
+    "mode": "standard",
+    "gameDifficulty": "쉬움",
+    "difficultyLabel": "쉬움",
+    "difficultyLevel": 2,
+    "difficultyScore": 30,
+    "givens": [
+      {
+        "row": 0,
+        "col": 0,
+        "value": "A"
+      },
+      {
+        "row": 2,
+        "col": 4,
+        "value": "B"
+      }
+    ],
+    "constraints": [
+      {
+        "from": {
+          "row": 0,
+          "col": 0
+        },
+        "to": {
+          "row": 0,
+          "col": 1
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 0,
+          "col": 1
+        },
+        "to": {
+          "row": 1,
+          "col": 1
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 0,
+          "col": 3
+        },
+        "to": {
+          "row": 1,
+          "col": 3
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 1,
+          "col": 1
+        },
+        "to": {
+          "row": 1,
+          "col": 2
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 2,
+          "col": 0
+        },
+        "to": {
+          "row": 2,
+          "col": 1
+        },
+        "type": "="
+      },
+      {
+        "from": {
+          "row": 2,
+          "col": 1
+        },
+        "to": {
+          "row": 3,
+          "col": 1
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 2,
+          "col": 4
+        },
+        "to": {
+          "row": 3,
+          "col": 4
+        },
+        "type": "x"
+      },
+      {
+        "from": {
+          "row": 3,
+          "col": 4
+        },
+        "to": {
+          "row": 4,
+          "col": 4
+        },
+        "type": "x"
+      }
+    ],
+    "metadata": {
+      "generatorVersion": "0.1.0"
+    },
+    "stage": 70,
+    "totalStages": 70,
+    "gameDifficultyKey": "easy",
+    "gameDifficultyLabel": "쉬움"
+  }
+}
