@@ -3,7 +3,7 @@ import { validateBoard } from "../core/validateBoard.js";
 import { getNextHint } from "../game/hintEngine.js";
 import { canUndo, createUndoHistory, popUndoSnapshot, recordUndoSnapshot, resetUndoHistory, } from "../game/undoHistory.js";
 import { clampStage, createDraftBoard, formatElapsedTime, loadStageList, loadStageMenu, loadStagePuzzle, nextUnlockedStage, stageProgressKey, } from "./puzzleData.js";
-import { createAccount, createLinkCode, ensureAnonymousSession, getMyAccount, getProgress, redeemLinkCode, recordStageSolve, saveProgress, } from "./supabaseClient.js";
+import { createAccount, createLinkCode, ensureAnonymousSession, getSolvedCountLeaderboard, getMyAccount, getProgress, redeemLinkCode, recordStageSolve, saveProgress, } from "./supabaseClient.js";
 const PACK_OPTIONS = [
     { size: 6, difficulty: "easy", label: "6x6 쉬움" },
     { size: 6, difficulty: "hard", label: "6x6 어려움" },
@@ -18,6 +18,7 @@ const TUTORIAL_STORAGE_KEY = "tango:tutorial-seen:v3";
 const TOTAL_PLAY_SECONDS_KEY = "tango:total-play-seconds";
 const CLOUD_PROGRESS_VERSION = 2;
 const NICKNAME_TAKEN_MESSAGE = "Nickname is already taken.";
+const LEADERBOARD_LIMIT = 50;
 const VALUE_TO_CLASS = {
     A: "filled",
     B: "hollow",
@@ -56,6 +57,8 @@ const state = {
     progressSaveTimeoutId: null,
     progressSaveInFlight: false,
     progressSavePending: false,
+    leaderboard: [],
+    leaderboardLoading: false,
 };
 const accountBar = requireElement("#accountBar");
 const accountLabel = requireElement("#accountLabel");
@@ -78,6 +81,7 @@ const accountAlertTitle = requireElement("#accountAlertTitle");
 const accountAlertMessage = requireElement("#accountAlertMessage");
 const menuButton = requireElement("#menuButton");
 const profileButton = requireElement("#profileButton");
+const leaderboardButton = requireElement("#leaderboardButton");
 const tutorialButton = requireElement("#tutorialButton");
 const tutorialModal = requireElement("#tutorialModal");
 const tutorialCloseButton = requireElement("#tutorialCloseButton");
@@ -94,6 +98,13 @@ const profileTotalTime = requireElement("#profileTotalTime");
 const profileClearedStages = requireElement("#profileClearedStages");
 const profileStatus = requireElement("#profileStatus");
 const profilePlayButton = requireElement("#profilePlayButton");
+const leaderboardScreen = requireElement("#leaderboardScreen");
+const leaderboardRefreshButton = requireElement("#leaderboardRefreshButton");
+const leaderboardMyCard = requireElement("#leaderboardMyCard");
+const leaderboardMyRank = requireElement("#leaderboardMyRank");
+const leaderboardMyCopy = requireElement("#leaderboardMyCopy");
+const leaderboardList = requireElement("#leaderboardList");
+const leaderboardStatus = requireElement("#leaderboardStatus");
 const stageScreen = requireElement("#stageScreen");
 const selectedPackTitle = requireElement("#selectedPackTitle");
 const selectedPackMeta = requireElement("#selectedPackMeta");
@@ -129,6 +140,7 @@ let accountAlertPreviouslyFocused = null;
 let completionPreviouslyFocused = null;
 let completionEffectCleanupId = null;
 let completionRankingRequestId = 0;
+let leaderboardRequestId = 0;
 const CONFETTI_COLORS = ["#0f8f65", "#0f7c55", "#f0ca2e", "#c2475a", "#1d6fd8", "#151a17"];
 const CONFETTI_COUNT = 64;
 createAccountForm.addEventListener("submit", (event) => {
@@ -150,6 +162,12 @@ menuButton.addEventListener("click", () => {
 });
 profileButton.addEventListener("click", () => {
     showProfileScreen();
+});
+leaderboardButton.addEventListener("click", () => {
+    showLeaderboardScreen();
+});
+leaderboardRefreshButton.addEventListener("click", () => {
+    void loadLeaderboard();
 });
 tutorialButton.addEventListener("click", () => {
     showTutorial();
@@ -427,6 +445,7 @@ async function updateCompletionRanking(puzzle, elapsedSeconds, requestId) {
             stage: puzzle.stage,
             elapsedSeconds: Math.max(1, Math.trunc(elapsedSeconds)),
         });
+        state.leaderboard = [];
         if (requestId !== completionRankingRequestId) {
             return;
         }
@@ -1097,6 +1116,50 @@ function showProfileScreen() {
     setView("profile");
     renderProfileStats();
 }
+function showLeaderboardScreen() {
+    if (!canPlay()) {
+        setView("account");
+        return;
+    }
+    clearCurrentPuzzle();
+    setView("leaderboard");
+    renderLeaderboard();
+    void loadLeaderboard();
+}
+async function loadLeaderboard() {
+    if (state.leaderboardLoading || !canPlay()) {
+        return;
+    }
+    const requestId = ++leaderboardRequestId;
+    state.leaderboardLoading = true;
+    leaderboardStatus.textContent = "리더보드를 불러오는 중입니다.";
+    updateControls();
+    try {
+        const entries = await getSolvedCountLeaderboard(LEADERBOARD_LIMIT);
+        if (requestId !== leaderboardRequestId) {
+            return;
+        }
+        state.leaderboard = entries;
+        renderLeaderboard();
+        leaderboardStatus.textContent =
+            entries.length > 0
+                ? "닉네임 계정으로 완료한 고유 퍼즐만 집계됩니다."
+                : "아직 리더보드 기록이 없습니다.";
+    }
+    catch (error) {
+        console.error("Failed to load solved-count leaderboard", error);
+        if (requestId === leaderboardRequestId) {
+            leaderboardStatus.textContent =
+                "리더보드를 불러오지 못했습니다. 잠시 후 다시 시도하세요.";
+        }
+    }
+    finally {
+        if (requestId === leaderboardRequestId) {
+            state.leaderboardLoading = false;
+            updateControls();
+        }
+    }
+}
 function showStageScreen() {
     if (!canPlay()) {
         setView("account");
@@ -1137,10 +1200,12 @@ function setView(view) {
     accountScreen.classList.toggle("is-hidden", view !== "account");
     menuScreen.classList.toggle("is-hidden", view !== "menu");
     profileScreen.classList.toggle("is-hidden", view !== "profile");
+    leaderboardScreen.classList.toggle("is-hidden", view !== "leaderboard");
     stageScreen.classList.toggle("is-hidden", view !== "stages");
     gameScreen.classList.toggle("is-hidden", view !== "puzzle");
     menuButton.classList.toggle("is-active", view === "menu");
     profileButton.classList.toggle("is-active", view === "profile");
+    leaderboardButton.classList.toggle("is-active", view === "leaderboard");
     updateControls();
 }
 function renderProfileStats() {
@@ -1150,6 +1215,62 @@ function renderProfileStats() {
     profileTotalTime.textContent = formatElapsedTime(state.progress.totalPlaySeconds);
     profileClearedStages.textContent = `${getTotalClearedStageCount()}개`;
     profileStatus.textContent = state.progressLoaded ? "" : "진행도 정보를 불러오는 중입니다.";
+}
+function renderLeaderboard() {
+    leaderboardList.replaceChildren();
+    for (const [index, entry] of state.leaderboard.entries()) {
+        const rank = normalizePositiveInteger(entry.leaderboard_rank, 1);
+        const solvedCount = normalizePositiveInteger(entry.solved_count, 0);
+        const row = document.createElement("div");
+        row.className = "leaderboard-row";
+        row.setAttribute("role", "row");
+        if (entry.is_current_user) {
+            row.classList.add("is-current-user");
+            row.setAttribute("aria-current", "true");
+            if (index >= LEADERBOARD_LIMIT) {
+                row.classList.add("is-outside-top");
+            }
+        }
+        if (rank <= 3) {
+            row.classList.add(`is-rank-${rank}`);
+        }
+        const rankCell = document.createElement("span");
+        rankCell.className = "leaderboard-rank";
+        rankCell.setAttribute("role", "cell");
+        rankCell.textContent = String(rank);
+        const playerCell = document.createElement("span");
+        playerCell.className = "leaderboard-player";
+        playerCell.setAttribute("role", "cell");
+        playerCell.textContent = entry.account_nickname;
+        if (entry.is_current_user) {
+            const myBadge = document.createElement("span");
+            myBadge.className = "leaderboard-me-badge";
+            myBadge.textContent = "나";
+            playerCell.append(myBadge);
+        }
+        const countCell = document.createElement("strong");
+        countCell.className = "leaderboard-count";
+        countCell.setAttribute("role", "cell");
+        countCell.textContent = `${solvedCount}개`;
+        row.append(rankCell, playerCell, countCell);
+        leaderboardList.append(row);
+    }
+    const myEntry = state.leaderboard.find((entry) => entry.is_current_user);
+    leaderboardMyCard.classList.toggle("is-guest", !state.account);
+    if (!state.account) {
+        leaderboardMyRank.textContent = "게스트 모드";
+        leaderboardMyCopy.textContent = "리더보드는 볼 수 있지만 게스트의 완료 기록은 집계되지 않습니다.";
+        return;
+    }
+    if (!myEntry) {
+        leaderboardMyRank.textContent = "기록 없음";
+        leaderboardMyCopy.textContent = "퍼즐을 하나 완료하면 내 순위가 표시됩니다.";
+        return;
+    }
+    const myRank = normalizePositiveInteger(myEntry.leaderboard_rank, 1);
+    const mySolvedCount = normalizePositiveInteger(myEntry.solved_count, 0);
+    leaderboardMyRank.textContent = `${myRank}위`;
+    leaderboardMyCopy.textContent = `${state.account.account_nickname}님은 고유 퍼즐 ${mySolvedCount}개를 완료했습니다.`;
 }
 function renderMenuChoices() {
     choiceGrid.innerHTML = "";
@@ -1495,6 +1616,8 @@ function unlockNextStage(stage) {
 function updateControls() {
     menuButton.disabled = state.loading || !canPlay();
     profileButton.disabled = state.loading || !canPlay();
+    leaderboardButton.disabled = state.loading || !canPlay();
+    leaderboardRefreshButton.disabled = state.loading || state.leaderboardLoading || !canPlay();
     profilePlayButton.disabled = state.loading || !canPlay();
     createLinkCodeButton.disabled = state.loading || !state.account;
     backToMenuButton.disabled = state.loading;

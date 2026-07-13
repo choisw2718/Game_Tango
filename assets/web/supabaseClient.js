@@ -88,6 +88,12 @@ export async function recordStageSolve(input) {
     }
     return ranking;
 }
+export async function getSolvedCountLeaderboard(limit = 50) {
+    const normalizedLimit = Math.min(100, Math.max(1, Math.trunc(limit)));
+    const result = await getSupabaseClient().rpc("get_solved_count_leaderboard", { p_limit: normalizedLimit });
+    assertNoSupabaseError(result.error);
+    return Array.isArray(result.data) ? result.data : [];
+}
 function firstRow(data) {
     return Array.isArray(data) && data.length > 0 ? data[0] ?? null : null;
 }

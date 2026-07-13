@@ -8,7 +8,7 @@
       name="description"
       content="Tango is a browser-based logic puzzle game with original stage data, clear rules, local progress saving, and optional nickname sync."
     />
-    <link rel="stylesheet" href="./assets/web/styles.css?v=20260712-policy" />
+    <link rel="stylesheet" href="./assets/web/styles.css?v=20260713-leaderboard" />
   </head>
   <body>
     <main class="app-shell">
@@ -27,6 +27,7 @@
         </div>
         <div class="topbar-actions">
           <button class="menu-tab tutorial-tab" id="tutorialButton" type="button">규칙</button>
+          <button class="menu-tab" id="leaderboardButton" type="button">리더보드</button>
           <button class="menu-tab" id="profileButton" type="button">프로필</button>
           <button class="menu-tab is-active" id="menuButton" type="button">게임 선택</button>
         </div>
@@ -133,6 +134,48 @@
         </div>
 
         <p class="status" id="profileStatus" aria-live="polite"></p>
+      </section>
+
+      <section
+        class="screen leaderboard-screen is-hidden"
+        id="leaderboardScreen"
+        aria-label="풀이 수 리더보드"
+      >
+        <div class="screen-head">
+          <div>
+            <span class="step-label">리더보드</span>
+            <h2>가장 많이 푼 플레이어</h2>
+            <p class="screen-meta">고유 퍼즐 완료 수를 기준으로 집계하며, 동점은 같은 순위입니다.</p>
+          </div>
+          <button
+            class="secondary-button compact-button"
+            id="leaderboardRefreshButton"
+            type="button"
+          >
+            새로고침
+          </button>
+        </div>
+
+        <article class="leaderboard-my-card" id="leaderboardMyCard" aria-label="내 리더보드 기록">
+          <div>
+            <span class="leaderboard-my-label">내 기록</span>
+            <strong class="leaderboard-my-rank" id="leaderboardMyRank">기록 없음</strong>
+          </div>
+          <p class="leaderboard-my-copy" id="leaderboardMyCopy">
+            닉네임 계정으로 완료한 퍼즐이 순위에 반영됩니다.
+          </p>
+        </article>
+
+        <div class="leaderboard-table" role="table" aria-label="퍼즐 완료 수 순위">
+          <div class="leaderboard-table-head" role="row">
+            <span role="columnheader">순위</span>
+            <span role="columnheader">플레이어</span>
+            <span role="columnheader">완료</span>
+          </div>
+          <div class="leaderboard-list" id="leaderboardList" role="rowgroup"></div>
+        </div>
+
+        <p class="status leaderboard-status" id="leaderboardStatus" aria-live="polite"></p>
       </section>
 
       <section
@@ -396,6 +439,6 @@
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="./assets/web/app.js?v=20260712-policy"></script>
+    <script type="module" src="./assets/web/app.js?v=20260713-leaderboard"></script>
   </body>
 </html>
